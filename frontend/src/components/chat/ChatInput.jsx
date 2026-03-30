@@ -43,9 +43,11 @@ export default function ChatInput() {
 
   const placeholder = isInitializing
     ? '세션 준비 중...'
-    : isStreaming
-      ? '답변 생성 중...'
-      : '지방세 관련 질문을 입력하세요...'
+    : !sessionId
+      ? 'GPKI 인증 후 이용 가능합니다'
+      : isStreaming
+        ? '답변 생성 중...'
+        : '지방세 관련 질문을 입력하세요...'
 
   return (
     <div className="shrink-0 border-t border-gray-200 bg-white p-3">

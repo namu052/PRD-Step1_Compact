@@ -10,6 +10,7 @@ const GPKI_CERT_PATH = path.join(
   process.env.HOME || process.env.USERPROFILE || '',
   'GPKI/Certificate/class2',
 )
+const NULL_DEVICE = process.platform === 'win32' ? 'NUL' : '/dev/null'
 
 function parseSubject(subjectLine) {
   const normalized = subjectLine
@@ -101,7 +102,8 @@ function readCertificateInfo(certId) {
 
 function collectCertificates() {
   if (!fs.existsSync(GPKI_CERT_PATH)) {
-    throw new Error(`인증서 폴더가 존재하지 않습니다: ${GPKI_CERT_PATH}`)
+    console.warn(`[gpkiPlugin] 인증서 폴더가 존재하지 않습니다: ${GPKI_CERT_PATH}`)
+    return []
   }
 
   return fs
@@ -132,7 +134,7 @@ function verifyPrivateKey(certId, password) {
       '-outform',
       'PEM',
       '-out',
-      '/dev/null',
+      NULL_DEVICE,
     ],
     {
       encoding: 'utf8',

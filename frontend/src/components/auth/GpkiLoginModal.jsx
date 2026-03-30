@@ -52,10 +52,21 @@ export default function GpkiLoginModal() {
 
           {loginError && <p className="text-center text-sm text-red-500">{loginError}</p>}
 
-          <div className="pt-2">
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCertId(null)
+                setPassword('')
+                clearError()
+              }}
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+            >
+              취소
+            </button>
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition hover:bg-blue-700 disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition hover:bg-blue-700 disabled:opacity-50"
               disabled={!selectedCertId || !password || isLoggingIn}
             >
               {isLoggingIn ? '인증 중...' : '확인'}

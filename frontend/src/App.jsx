@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import AppShell from './components/layout/AppShell'
+import GpkiLoginModal from './components/auth/GpkiLoginModal'
 import { useAuthStore } from './stores/authStore'
 
 const OLTA_URL = 'https://www.olta.re.kr'
@@ -7,7 +8,8 @@ const OLTA_OPENED_KEY = 'olta-window-opened'
 
 function App() {
   const bootstrapSession = useAuthStore((state) => state.bootstrapSession)
-  const logout = useAuthStore((state) => state.logout)
+  const isInitializing = useAuthStore((state) => state.isInitializing)
+  const sessionId = useAuthStore((state) => state.sessionId)
 
   useEffect(() => {
     if (sessionStorage.getItem(OLTA_OPENED_KEY) === 'true') {
@@ -22,14 +24,29 @@ function App() {
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      void logout()
+      const { sessionId: currentSessionId } = useAuthStore.getState()
+      if (!currentSessionId) {
+        return
+      }
+
+      navigator.sendBeacon(
+        '/api/auth/logout',
+        new Blob([JSON.stringify({ session_id: currentSessionId })], {
+          type: 'application/json',
+        }),
+      )
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [logout])
+  }, [])
 
-  return <AppShell />
+  return (
+    <>
+      <AppShell />
+      {!sessionId && !isInitializing && <GpkiLoginModal />}
+    </>
+  )
 }
 
 export default App

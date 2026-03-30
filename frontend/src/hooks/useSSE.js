@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useAuthStore } from '../stores/authStore'
 import { useChatStore } from '../stores/chatStore'
 
 function parseSSEChunk(chunk, onEvent) {
@@ -67,6 +68,13 @@ export function useSSE() {
           return
         }
 
+        if (eventType === 'error') {
+          const errorMessage = data.message || data.error || '서버 오류가 발생했습니다.'
+          failStream(aiMessageId, errorMessage)
+          sawTerminalStage = true
+          return
+        }
+
         if (eventType === 'sources') {
           setSources({ sources: data.sources ?? [], confidence: data.confidence ?? null })
           if (data.confidence) {
@@ -100,6 +108,12 @@ export function useSSE() {
             question,
           }),
         })
+
+        if (response.status === 401) {
+          useAuthStore.getState().resetSession()
+          failStream(aiMessageId, '세션이 만료되었습니다. 다시 로그인해 주세요.')
+          return
+        }
 
         if (!response.ok || !response.body) {
           throw new Error('SSE connection failed')

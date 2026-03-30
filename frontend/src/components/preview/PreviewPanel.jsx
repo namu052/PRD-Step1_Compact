@@ -45,6 +45,11 @@ export default function PreviewPanel() {
         const response = await fetch(
           `/api/preview/${encodeURIComponent(selectedSourceId)}?session_id=${encodeURIComponent(sessionId)}`,
         )
+        if (response.status === 401) {
+          useAuthStore.getState().resetSession()
+          throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.')
+        }
+
         if (!response.ok) {
           throw new Error('출처 상세 정보를 불러오지 못했습니다.')
         }

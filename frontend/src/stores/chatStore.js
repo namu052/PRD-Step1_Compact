@@ -64,15 +64,31 @@ export const useChatStore = create((set, get) => ({
     })),
 
   setStage: (stage) =>
-    set((state) => ({
-      currentStage: stage,
-      messages:
-        stage === 'finalizing' && state.activeMessageId
-          ? state.messages.map((message) =>
-              message.id === state.activeMessageId ? { ...message, content: '' } : message,
-            )
-          : state.messages,
-    })),
+    set((state) => {
+      if (stage === 'finalizing') {
+        const alreadyNotified = state.messages.some(
+          (message) =>
+            message.role === 'system' && message.content === '최종 답변을 정리하고 있습니다...',
+        )
+
+        return {
+          currentStage: stage,
+          messages: alreadyNotified
+            ? state.messages
+            : [
+                ...state.messages,
+                {
+                  id: `msg_${Date.now()}_system_finalizing`,
+                  role: 'system',
+                  content: '최종 답변을 정리하고 있습니다...',
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+        }
+      }
+
+      return { currentStage: stage }
+    }),
 
   setSources: ({ sources, confidence }) =>
     set({
