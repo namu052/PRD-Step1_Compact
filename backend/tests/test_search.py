@@ -1,8 +1,8 @@
 import pytest
 
-from app.config import get_settings
 from app.models.schemas import CrawlResult
 from app.services.embedding_service import embedding_service
+from app.services.openai_service import openai_service
 from app.services.search_service import search_service
 
 
@@ -25,6 +25,13 @@ async def test_extract_keywords_unknown():
 
 
 @pytest.mark.asyncio
+async def test_extract_keywords_expanded_terms():
+    keywords = await search_service.extract_keywords("지방소득세 가산세 경정청구가 가능한가요?")
+    joined = " ".join(keywords)
+    assert "지방소득세" in joined or "가산세" in joined or "경정청구" in joined
+
+
+@pytest.mark.asyncio
 async def test_build_search_plan_specific_year():
     plan = await search_service.build_search_plan("2021년 취득세 감면 판례를 알려줘")
     assert plan.detected_year == 2021
@@ -43,40 +50,73 @@ async def test_build_search_plan_without_year_prefers_latest():
 
 @pytest.mark.asyncio
 async def test_rank_results_prefers_specific_year():
-    settings = get_settings()
-    original_use_mock_crawler = settings.use_mock_crawler
-    settings.use_mock_crawler = False
-    try:
-        results = [
-            CrawlResult(
-                id="old",
-                title="2019년 취득세 감면 해석",
-                type="법제처 유권해석",
-                content="2019년 취득세 감면 기준",
-                preview="2019년 자료",
-                url="https://example.com/old",
-                relevance_score=0.8,
-                document_year=2019,
-            ),
-            CrawlResult(
-                id="target",
-                title="2021년 취득세 감면 해석",
-                type="법제처 유권해석",
-                content="2021년 취득세 감면 기준",
-                preview="2021년 자료",
-                url="https://example.com/target",
-                relevance_score=0.8,
-                document_year=2021,
-            ),
+    results = [
+        CrawlResult(
+            id="old",
+            title="2019년 취득세 감면 해석",
+            type="법제처 유권해석",
+            content="2019년 취득세 감면 기준",
+            preview="2019년 자료",
+            url="https://example.com/old",
+            relevance_score=0.8,
+            document_year=2019,
+        ),
+        CrawlResult(
+            id="target",
+            title="2021년 취득세 감면 해석",
+            type="법제처 유권해석",
+            content="2021년 취득세 감면 기준",
+            preview="2021년 자료",
+            url="https://example.com/target",
+            relevance_score=0.8,
+            document_year=2021,
+        ),
+    ]
+
+    ranked = await embedding_service.rank_results(
+        "2021년 취득세 감면",
+        results,
+        top_k=2,
+        preferred_year=2021,
+        prefer_latest=False,
+    )
+    assert ranked[0].id == "target"
+
+
+@pytest.mark.asyncio
+async def test_rank_results_embedding_mode(monkeypatch):
+    async def fake_create_embeddings(texts, model):
+        del model
+        assert len(texts) == 3
+        return [
+            [1.0, 0.0],
+            [0.95, 0.05],
+            [0.1, 0.9],
         ]
 
-        ranked = await embedding_service.rank_results(
-            "2021년 취득세 감면",
-            results,
-            top_k=2,
-            preferred_year=2021,
-            prefer_latest=False,
-        )
-        assert ranked[0].id == "target"
-    finally:
-        settings.use_mock_crawler = original_use_mock_crawler
+    monkeypatch.setattr(openai_service, "create_embeddings", fake_create_embeddings)
+    results = [
+        CrawlResult(
+            id="best",
+            title="취득세 감면 해석",
+            type="법제처 유권해석",
+            content="취득세 감면 기준",
+            preview="취득세 감면",
+            url="https://example.com/best",
+            relevance_score=0.7,
+            document_year=2024,
+        ),
+        CrawlResult(
+            id="other",
+            title="재산세 납부 해석",
+            type="법제처 유권해석",
+            content="재산세 납부 기준",
+            preview="재산세 납부",
+            url="https://example.com/other",
+            relevance_score=0.9,
+            document_year=2024,
+        ),
+    ]
+
+    ranked = await embedding_service.rank_results("취득세 감면", results, top_k=2)
+    assert ranked[0].id == "best"

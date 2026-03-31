@@ -9,6 +9,7 @@ export const useChatStore = create((set, get) => ({
   currentSources: [],
   currentConfidence: null,
   hasAskedQuestion: false,
+  finalAnswerPopup: null,
 
   beginStream: (question) => {
     const requestId = Date.now()
@@ -97,6 +98,17 @@ export const useChatStore = create((set, get) => ({
       selectedSourceId: sources.length > 0 ? get().selectedSourceId : null,
     }),
 
+  openFinalAnswerPopup: ({ content, confidence }) =>
+    set({
+      finalAnswerPopup: {
+        content,
+        confidence: confidence ?? null,
+        openedAt: new Date().toISOString(),
+      },
+    }),
+
+  closeFinalAnswerPopup: () => set({ finalAnswerPopup: null }),
+
   finishStream: () => set({ currentStage: 'done', isStreaming: false, activeMessageId: null }),
 
   failStream: (messageId, errorMessage) => {
@@ -123,6 +135,7 @@ export const useChatStore = create((set, get) => ({
         selectedSourceId: null,
         isStreaming: false,
         activeMessageId: null,
+        finalAnswerPopup: null,
       }
     })
   },
@@ -139,5 +152,6 @@ export const useChatStore = create((set, get) => ({
       currentSources: [],
       currentConfidence: null,
       hasAskedQuestion: false,
+      finalAnswerPopup: null,
     }),
 }))

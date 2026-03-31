@@ -6,6 +6,7 @@ from app.services.verification.content_verifier import content_verifier
 from app.services.verification.final_generator import final_generator
 from app.services.verification.source_verifier import source_verifier
 from app.services.verification.verification_aggregator import verification_aggregator
+from app.services.llm_service import llm_service
 from tests.mocks.mock_drafts import (
     MOCK_CRAWL_RESULTS,
     MOCK_DRAFT_ALL_WRONG,
@@ -52,7 +53,7 @@ async def test_verification_pipeline_normal():
     claims = await content_verifier.verify(MOCK_DRAFT_NORMAL, crawl_results)
     verification = verification_aggregator.aggregate(sources, claims)
     final_answer = await final_generator.generate(MOCK_DRAFT_NORMAL, verification, evidence_slots, crawl_results)
-    assert verification.confidence_label == "높음"
+    assert verification.confidence_label in ("높음", "매우 높음")
     assert final_answer.verified_sources
 
 
@@ -72,3 +73,15 @@ async def test_verification_pipeline_all_wrong():
     claims = await content_verifier.verify(MOCK_DRAFT_ALL_WRONG, crawl_results)
     verification = verification_aggregator.aggregate(sources, claims)
     assert verification.confidence_label == "낮음"
+
+
+@pytest.mark.asyncio
+async def test_verification_feedback_contains_detailed_metrics():
+    crawl_results = _to_crawl_results(MOCK_CRAWL_RESULTS)
+    sources = await source_verifier.verify(MOCK_DRAFT_WITH_HALLUCINATION, crawl_results)
+    claims = await content_verifier.verify(MOCK_DRAFT_WITH_HALLUCINATION, crawl_results)
+    verification = verification_aggregator.aggregate(sources, claims)
+    feedback = llm_service._format_verification_feedback(verification)
+    assert "직접 출처 커버리지" in feedback
+    assert "검증된 출처 연결 비율" in feedback
+    assert "치명 이슈" in feedback

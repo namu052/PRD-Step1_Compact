@@ -22,33 +22,28 @@ class FinalGenerator:
         settings = get_settings()
         streamed = False
         try:
-            if settings.use_mock_llm:
-                answer = self._mock_generate(draft_answer, verification_result, evidence_slots)
-            else:
-                answer, _ = await openai_service.create_text(
-                    model=settings.openai_final_model,
-                    system_prompt="너는 지방세 답변 최종 편집자이다. 반드시 Markdown 답변만 출력하라.",
-                    user_prompt=FINAL_ANSWER_PROMPT.format(
-                        draft_answer=draft_answer,
-                        evidence_slots=openai_service.format_evidence_slots(evidence_slots),
-                        verification_result=self._format_verification_result(verification_result),
-                        verified_sources=self._format_verified_sources(
-                            verification_result,
-                            evidence_slots,
-                            crawl_results,
-                        ),
-                        confidence_label=verification_result.confidence_label,
-                        confidence_score=round(verification_result.overall_confidence * 100, 1),
+            answer, _ = await openai_service.create_text(
+                model=settings.openai_final_model,
+                system_prompt="너는 지방세 답변 최종 편집자이다. 반드시 Markdown 답변만 출력하라.",
+                user_prompt=FINAL_ANSWER_PROMPT.format(
+                    draft_answer=draft_answer,
+                    evidence_slots=openai_service.format_evidence_slots(evidence_slots),
+                    verification_result=self._format_verification_result(verification_result),
+                    verified_sources=self._format_verified_sources(
+                        verification_result,
+                        evidence_slots,
+                        crawl_results,
                     ),
-                    temperature=0.1,
-                    max_tokens=1800,
-                    on_token=on_token,
-                )
-                streamed = on_token is not None
+                    confidence_label=verification_result.confidence_label,
+                    confidence_score=round(verification_result.overall_confidence * 100, 1),
+                ),
+                temperature=0.1,
+                max_tokens=settings.final_max_tokens,
+                on_token=on_token,
+            )
+            streamed = on_token is not None
         except Exception:
-            warning_line = "\n\n⚠️ 검증 단계 편집에 실패하여 초안을 그대로 반환합니다."
-            answer = draft_answer + warning_line
-
+            answer = self._fallback_generate(draft_answer, verification_result, evidence_slots)
         if on_token and not streamed:
             for index in range(0, len(answer), 5):
                 await on_token(answer[index : index + 5])
@@ -68,7 +63,7 @@ class FinalGenerator:
             warnings=verification_result.warnings,
         )
 
-    def _mock_generate(
+    def _fallback_generate(
         self,
         draft_answer: str,
         verification_result: VerificationResult,
@@ -117,7 +112,14 @@ class FinalGenerator:
     def _format_verification_result(self, verification_result: VerificationResult) -> str:
         parts = [
             f"- overall_confidence: {verification_result.overall_confidence}",
+            f"- claim_confidence: {verification_result.claim_confidence}",
+            f"- source_confidence: {verification_result.source_confidence}",
+            f"- slot_confidence: {verification_result.slot_confidence}",
+            f"- citation_coverage: {verification_result.citation_coverage}",
+            f"- verified_citation_ratio: {verification_result.verified_citation_ratio}",
+            f"- supported_claim_ratio: {verification_result.supported_claim_ratio}",
             f"- confidence_label: {verification_result.confidence_label}",
+            f"- critical_issues: {verification_result.critical_issues}",
             f"- removed_claims: {verification_result.removed_claims}",
             f"- modified_claims: {verification_result.modified_claims}",
             f"- warnings: {verification_result.warnings}",

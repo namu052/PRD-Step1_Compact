@@ -73,23 +73,26 @@ class EvidenceSummaryService:
         group_sources: list[CrawlResult],
     ) -> EvidenceSlot:
         settings = get_settings()
-        if settings.use_mock_llm:
-            return self._mock_summary(group, group_sources)
-
-        group_documents = openai_service.format_crawl_results(group_sources, content_limit=900)
-        payload, _ = await openai_service.create_json(
-            model=settings.openai_model,
-            system_prompt="너는 지방세 근거 문서를 묶어 요약하는 전문가이다. 반드시 JSON schema만 출력하라.",
-            user_prompt=EVIDENCE_SUMMARY_PROMPT.format(
-                question=question,
-                group_documents=group_documents,
-            ),
-            schema_name="evidence_group_summary",
-            schema=SUMMARY_SCHEMA,
-            temperature=0.1,
-            max_tokens=900,
-        )
         representative_sources = self._pick_representative_sources(group, group_sources)
+        try:
+            group_documents = openai_service.format_crawl_results(
+                group_sources,
+                content_limit=settings.summary_content_limit,
+            )
+            payload, _ = await openai_service.create_json(
+                model=settings.openai_summarization_model,
+                system_prompt="너는 지방세 근거 문서를 묶어 요약하는 전문가이다. 반드시 JSON schema만 출력하라.",
+                user_prompt=EVIDENCE_SUMMARY_PROMPT.format(
+                    question=question,
+                    group_documents=group_documents,
+                ),
+                schema_name="evidence_group_summary",
+                schema=SUMMARY_SCHEMA,
+                temperature=0.1,
+                max_tokens=settings.summary_max_tokens,
+            )
+        except Exception:
+            return self._fallback_summary(group, group_sources)
         return EvidenceSlot(
             slot_id=f"slot_{group.group_id}",
             group_id=group.group_id,
@@ -113,7 +116,7 @@ class EvidenceSummaryService:
             ),
         )
 
-    def _mock_summary(self, group: EvidenceGroup, group_sources: list[CrawlResult]) -> EvidenceSlot:
+    def _fallback_summary(self, group: EvidenceGroup, group_sources: list[CrawlResult]) -> EvidenceSlot:
         representative_sources = self._pick_representative_sources(group, group_sources)
         summary = " / ".join(source.preview for source in representative_sources if source.preview)[:260]
         key_points = [source.title for source in representative_sources[:4]]
@@ -160,7 +163,8 @@ class EvidenceSummaryService:
             if source.id not in {item.id for item in chosen}:
                 chosen.append(source)
 
-        return chosen[:4]
+        settings = get_settings()
+        return chosen[: settings.max_representative_sources]
 
 
 evidence_summary_service = EvidenceSummaryService()

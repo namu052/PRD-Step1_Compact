@@ -17,7 +17,7 @@ class OpenAIService:
     def _get_client(self) -> AsyncOpenAI:
         settings = get_settings()
         if not settings.openai_api_key:
-            raise RuntimeError("OPENAI_API_KEY is required when USE_MOCK_LLM=false")
+            raise RuntimeError("OPENAI_API_KEY is required")
 
         if self._client is None or self._api_key != settings.openai_api_key:
             self._api_key = settings.openai_api_key

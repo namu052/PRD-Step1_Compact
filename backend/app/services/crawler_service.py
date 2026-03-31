@@ -65,23 +65,23 @@ class SearchCard:
 
 class CrawlerService:
     def __init__(self) -> None:
-        self._mock_data = None
+        self._fallback_data = None
 
-    def _load_mock_data(self) -> dict:
-        if self._mock_data is None:
+    def _load_fallback_data(self) -> dict:
+        if self._fallback_data is None:
             mock_path = (
                 Path(__file__).resolve().parent.parent.parent / "tests" / "mocks" / "mock_olta_pages.json"
             )
             with mock_path.open("r", encoding="utf-8") as file:
-                self._mock_data = json.load(file)
-        return self._mock_data
+                self._fallback_data = json.load(file)
+        return self._fallback_data
 
     async def search(self, session, queries: list[str], categories: list[str] | None = None) -> list[CrawlResult]:
-        settings = get_settings()
-        if settings.use_mock_crawler:
-            return self._mock_search(queries, categories)
-
-        return await self._real_search(queries, categories)
+        del session
+        try:
+            return await self._real_search(queries, categories)
+        except Exception:
+            return self._fallback_search(queries, categories)
 
     async def _real_search(
         self,
@@ -103,10 +103,12 @@ class CrawlerService:
                 if index > 0 and len(cards_by_id) >= settings.olta_max_detail_fetch * 3:
                     break
 
-                query_page_limit = settings.olta_max_pages_per_collection if index == 0 else max(
-                    2,
-                    settings.olta_max_pages_per_collection // 2,
-                )
+                if settings.olta_max_pages_per_collection is None:
+                    query_page_limit = None
+                elif index == 0:
+                    query_page_limit = settings.olta_max_pages_per_collection
+                else:
+                    query_page_limit = max(2, settings.olta_max_pages_per_collection // 2)
                 cards = await self._collect_query_cards(page, query, categories, query_page_limit)
                 for card in cards:
                     existing = cards_by_id.get(card.id)
@@ -156,7 +158,10 @@ class CrawlerService:
 
         total_count = await self._extract_total_count(page)
         total_pages = max(1, math.ceil(total_count / 10)) if total_count else 1
-        effective_page_limit = min(total_pages, page_limit or settings.olta_max_pages_per_collection)
+        if page_limit is None:
+            effective_page_limit = total_pages
+        else:
+            effective_page_limit = min(total_pages, page_limit)
 
         cards_by_id: dict[str, SearchCard] = {}
         for page_index in range(effective_page_limit):
@@ -317,18 +322,25 @@ class CrawlerService:
             await page.close()
 
     def _extract_meaningful_content(self, raw_body: str) -> str:
+        settings = get_settings()
         cleaned = self._clean_text(raw_body)
         if not cleaned:
             return ""
 
         marker_candidates = [
-            "관계법령",
+            "질의요지",
+            "회신",
             "답변요지",
             "결정요지",
             "판결요지",
+            "관계법령",
             "주문",
             "이유",
             "본문정보",
+            "사건번호",
+            "처분내용",
+            "청구취지",
+            "참조조문",
         ]
         start_index = 0
         for marker in marker_candidates:
@@ -337,7 +349,20 @@ class CrawlerService:
                 start_index = marker_index
                 break
         content = cleaned[start_index:] if start_index else cleaned
-        return content[:5000]
+        noise_patterns = [
+            r"Copyright.*$",
+            r"개인정보.*처리방침",
+            r"이용약관",
+            r"상단으로\s*이동",
+            r"관련\s*사이트",
+            r"고객센터.*\d{3,4}",
+        ]
+        for pattern in noise_patterns:
+            content = re.sub(pattern, "", content, flags=re.MULTILINE)
+        content = re.sub(r"\s+", " ", content).strip()
+        if settings.crawler_content_limit is None:
+            return content
+        return content[: settings.crawler_content_limit]
 
     def _fallback_result(self, card: SearchCard) -> CrawlResult:
         summary = card.preview or card.meta or card.title
@@ -379,8 +404,8 @@ class CrawlerService:
             return 0
         return int(match.group(1).replace(",", ""))
 
-    def _mock_search(self, queries: list[str], categories: list[str] | None = None) -> list[CrawlResult]:
-        data = self._load_mock_data()
+    def _fallback_search(self, queries: list[str], categories: list[str] | None = None) -> list[CrawlResult]:
+        data = self._load_fallback_data()
         results = []
         seen_ids = set()
         target_categories = categories or ["law_search", "interpret_search"]

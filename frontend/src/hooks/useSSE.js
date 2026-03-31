@@ -36,6 +36,7 @@ export function useSSE() {
   const addSystemMessage = useChatStore((state) => state.addSystemMessage)
   const setStage = useChatStore((state) => state.setStage)
   const setSources = useChatStore((state) => state.setSources)
+  const openFinalAnswerPopup = useChatStore((state) => state.openFinalAnswerPopup)
   const finishStream = useChatStore((state) => state.finishStream)
   const failStream = useChatStore((state) => state.failStream)
 
@@ -43,11 +44,25 @@ export function useSSE() {
     async ({ question, sessionId }) => {
       const aiMessageId = beginStream(question)
       let sawTerminalStage = false
+      let latestConfidence = null
+
+      const showFinalAnswerPopup = () => {
+        const state = useChatStore.getState()
+        const finalMessage = state.messages.find((message) => message.id === aiMessageId)
+        if (!finalMessage?.content?.trim()) {
+          return
+        }
+        openFinalAnswerPopup({
+          content: finalMessage.content,
+          confidence: finalMessage.confidence ?? latestConfidence ?? null,
+        })
+      }
 
       const handleEvent = (eventType, data) => {
         if (eventType === 'stage_change') {
           if (data.stage === 'done') {
             sawTerminalStage = true
+            showFinalAnswerPopup()
             finishStream()
             return
           }
@@ -76,6 +91,7 @@ export function useSSE() {
         }
 
         if (eventType === 'sources') {
+          latestConfidence = data.confidence ?? null
           setSources({ sources: data.sources ?? [], confidence: data.confidence ?? null })
           if (data.confidence) {
             const state = useChatStore.getState()
@@ -95,6 +111,7 @@ export function useSSE() {
 
         if (eventType === 'done') {
           sawTerminalStage = true
+          showFinalAnswerPopup()
           finishStream()
         }
       }
@@ -144,7 +161,7 @@ export function useSSE() {
         failStream(aiMessageId, '네트워크 오류가 발생했습니다. 다시 시도해 주세요.')
       }
     },
-    [addSystemMessage, appendToken, beginStream, failStream, finishStream, setSources, setStage],
+    [addSystemMessage, appendToken, beginStream, failStream, finishStream, openFinalAnswerPopup, setSources, setStage],
   )
 
   return { streamChat }

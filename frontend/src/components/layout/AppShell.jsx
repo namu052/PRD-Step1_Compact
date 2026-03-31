@@ -2,8 +2,13 @@ import TopBar from './TopBar'
 import StatusStepper from './StatusStepper'
 import ChatPanel from '../chat/ChatPanel'
 import PreviewPanel from '../preview/PreviewPanel'
+import FinalAnswerPopup from '../chat/FinalAnswerPopup'
+import { useChatStore } from '../../stores/chatStore'
 
 export default function AppShell() {
+  const finalAnswerPopup = useChatStore((state) => state.finalAnswerPopup)
+  const closeFinalAnswerPopup = useChatStore((state) => state.closeFinalAnswerPopup)
+
   return (
     <div className="h-screen flex flex-col bg-gray-100">
       <TopBar />
@@ -16,6 +21,7 @@ export default function AppShell() {
         </div>
       </main>
       <StatusStepper />
+      <FinalAnswerPopup answer={finalAnswerPopup} onClose={closeFinalAnswerPopup} />
     </div>
   )
 }

@@ -1,10 +1,12 @@
 const BADGE_STYLES = {
+  '매우 높음': 'bg-emerald-100 text-emerald-700',
   높음: 'bg-green-100 text-green-700',
   보통: 'bg-yellow-100 text-yellow-700',
   낮음: 'bg-red-100 text-red-700',
 }
 
 const BADGE_ICONS = {
+  '매우 높음': '🟢',
   높음: '🟢',
   보통: '🟡',
   낮음: '🔴',
@@ -22,6 +24,8 @@ export default function ConfidenceBadge({ confidence }) {
       ? '실무 적용 전 반드시 원문 확인'
       : label === '보통'
         ? '일부 내용은 원문 확인 권장'
+        : label === '높음'
+          ? '주요 내용은 근거 확인 완료'
         : null
 
   return (

@@ -5,20 +5,22 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     openai_api_key: str = ""
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-4o"
     openai_verification_model: str = "gpt-4o-mini"
-    openai_final_model: str = "gpt-4o-mini"
+    openai_final_model: str = "gpt-4o"
+    openai_summarization_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
 
     playwright_headless: bool = True
     playwright_timeout: int = 10000
     olta_base_url: str = "https://www.olta.re.kr"
     olta_max_results_per_query: int = 8
-    olta_max_pages_per_collection: int = 16
-    olta_max_detail_fetch: int = 96
-    answer_context_top_k: int = 48
+    olta_max_pages_per_collection: int | None = None
+    olta_max_detail_fetch: int = 32
+    answer_context_top_k: int = 40
     verification_target_confidence: float = 0.8
     max_verification_rounds: int = 5
+    crawler_content_limit: int | None = None
 
     gpki_cert_base_path: str = ""
 
@@ -26,10 +28,63 @@ class Settings(BaseSettings):
     port: int = 8000
     session_timeout_minutes: int = 30
 
-    use_mock_crawler: bool = False
-    use_mock_llm: bool = False
+    search_max_keywords: int = 10
+    search_use_llm_extraction: bool = True
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    ranking_semantic_weight: float = 0.6
+    ranking_overlap_weight: float = 0.2
+    ranking_position_weight: float = 0.1
+    ranking_year_weight: float = 0.1
+    ranking_diversity_divisor: int = 6
+    embedding_content_limit: int = 1500
+
+    grouping_similarity_high: float = 0.84
+    grouping_similarity_medium: float = 0.76
+    grouping_title_overlap_with_medium: float = 0.35
+    grouping_title_overlap_standalone: float = 0.55
+    grouping_content_limit: int = 1200
+    grouping_review_content_limit: int = 600
+
+    summary_content_limit: int = 900
+    summary_max_tokens: int = 900
+    max_representative_sources: int = 4
+
+    draft_max_tokens: int = 1800
+    draft_temperature: float = 0.2
+    revision_max_tokens: int = 1800
+    revision_temperature: float = 0.1
+    final_max_tokens: int = 1800
+
+    aggregator_penalty_not_found: float = 0.3
+    aggregator_penalty_mismatch: float = 0.5
+    aggregator_penalty_expired: float = 0.4
+    aggregator_penalty_no_citation: float = 0.2
+    aggregator_slot_contradicted: float = 0.2
+    aggregator_slot_unused: float = 0.5
+    aggregator_slot_partial: float = 0.8
+    aggregator_claim_weight: float = 0.55
+    aggregator_source_weight: float = 0.25
+    aggregator_slot_weight: float = 0.2
+    aggregator_cap_hallucinated: float = 0.34
+    aggregator_cap_unsupported_heavy: float = 0.45
+    aggregator_cap_source_failure: float = 0.4
+    aggregator_cap_slot_gap: float = 0.6
+    aggregator_cap_low_citation_coverage: float = 0.55
+    aggregator_cap_low_verified_citation_ratio: float = 0.65
+    aggregator_cap_low_supported_ratio: float = 0.6
+
+    confidence_very_high: float = 0.85
+    confidence_high: float = 0.7
+    confidence_medium: float = 0.4
+
+    stagnation_threshold: float = 0.02
+    low_confidence_warning: float = 0.5
+
+    cv_confidence_supported: float = 0.85
+    cv_confidence_partial: float = 0.5
+    cv_confidence_unsupported: float = 0.2
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 @lru_cache

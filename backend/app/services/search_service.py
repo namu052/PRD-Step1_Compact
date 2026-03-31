@@ -2,6 +2,48 @@ import re
 from dataclasses import dataclass, field
 
 from app.config import get_settings
+from app.prompts.search_extraction_prompt import (
+    KEYWORD_EXTRACTION_SCHEMA,
+    KEYWORD_EXTRACTION_SYSTEM,
+)
+from app.services.openai_service import openai_service
+
+
+TAX_TERMS = [
+    "취득세",
+    "재산세",
+    "등록면허세",
+    "자동차세",
+    "주민세",
+    "지방세",
+    "지방소득세",
+    "지방교육세",
+    "지역자원시설세",
+    "레저세",
+    "담배소비세",
+]
+
+TOPIC_TERMS = [
+    "감면",
+    "환급",
+    "신고",
+    "납부",
+    "비과세",
+    "과세",
+    "판례",
+    "유권해석",
+    "추징",
+    "세율",
+    "과세표준",
+    "납세의무",
+    "가산세",
+    "경정청구",
+    "유예",
+    "연납",
+    "분할납부",
+    "불복",
+    "심판",
+]
 
 
 @dataclass
@@ -42,11 +84,10 @@ class SearchService:
             return SearchPlan(question_type="일반 질의", keywords=[], categories=[])
 
         detected_year = self._extract_year(normalized)
-        keywords = (
-            self._mock_extract(normalized)
-            if settings.use_mock_llm
-            else self._extract_without_llm(normalized)
-        )
+        if settings.search_use_llm_extraction:
+            keywords = await self._llm_extract(normalized)
+        else:
+            keywords = self._extract_without_llm(normalized)
         question_type = self._classify_question_type(normalized)
         categories = self._select_categories(question_type, normalized)
         analysis_focus = self._build_analysis_focus(question_type, normalized)
@@ -55,26 +96,44 @@ class SearchService:
         return SearchPlan(
             question_type=question_type,
             categories=categories,
-            keywords=keywords[:4],
+            keywords=keywords[: settings.search_max_keywords],
             detected_year=detected_year,
             prefer_latest=detected_year is None,
             analysis_focus=analysis_focus,
             collection_focus=collection_focus,
         )
 
-    def _mock_extract(self, question: str) -> list[str]:
-        keywords = []
-        keyword_map = {
-            "취득세": "취득세 감면",
-            "재산세": "재산세 납부",
-            "등록면허세": "등록면허세",
-            "자동차세": "자동차세",
-            "주민세": "주민세",
-        }
-        for trigger, keyword in keyword_map.items():
-            if trigger in question:
-                keywords.append(keyword)
-        return keywords if keywords else [question]
+    async def _llm_extract(self, question: str) -> list[str]:
+        settings = get_settings()
+        fallback = self._extract_without_llm(question)
+        try:
+            payload, _ = await openai_service.create_json(
+                model=settings.openai_verification_model,
+                system_prompt=KEYWORD_EXTRACTION_SYSTEM,
+                user_prompt=f"질문: {question}",
+                schema_name="keyword_extraction",
+                schema=KEYWORD_EXTRACTION_SCHEMA,
+                temperature=0.0,
+                max_tokens=500,
+            )
+        except Exception:
+            return fallback
+
+        combined = [
+            *(payload.get("keywords") or []),
+            *(payload.get("synonyms") or []),
+            *(payload.get("legal_refs") or []),
+            *fallback,
+        ]
+        deduped = []
+        seen = set()
+        for keyword in combined:
+            value = re.sub(r"\s+", " ", str(keyword or "")).strip()
+            if not value or value in seen:
+                continue
+            seen.add(value)
+            deduped.append(value)
+        return deduped[: settings.search_max_keywords]
 
     def _extract_without_llm(self, question: str) -> list[str]:
         normalized = re.sub(r"\s+", " ", question).strip()
@@ -82,12 +141,9 @@ class SearchService:
             return []
 
         keywords = []
-        tax_terms = ["취득세", "재산세", "등록면허세", "자동차세", "주민세", "지방세"]
-        topic_terms = ["감면", "환급", "신고", "납부", "비과세", "과세", "판례", "유권해석"]
-
-        for tax in tax_terms:
+        for tax in TAX_TERMS:
             if tax in normalized:
-                for topic in topic_terms:
+                for topic in TOPIC_TERMS:
                     if topic in normalized:
                         keywords.append(f"{tax} {topic}")
                 keywords.append(tax)

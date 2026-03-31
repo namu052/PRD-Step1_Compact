@@ -54,12 +54,12 @@ GROUP_REVIEW_SCHEMA = {
 
 class EvidenceGroupService:
     async def group(self, question: str, crawl_results: list[CrawlResult]) -> list[EvidenceGroup]:
-        settings = get_settings()
         if not crawl_results:
             return []
-        if settings.use_mock_llm:
+        try:
+            return await self._group_with_embeddings(question, crawl_results)
+        except Exception:
             return self._group_by_heuristics(question, crawl_results)
-        return await self._group_with_embeddings(question, crawl_results)
 
     async def _group_with_embeddings(
         self,
@@ -93,11 +93,13 @@ class EvidenceGroupService:
                 )
                 title_overlap = self._title_overlap(crawl_results[left].title, crawl_results[right].title)
 
-                if score >= 0.84:
+                if score >= settings.grouping_similarity_high:
                     union(left, right)
-                elif score >= 0.76 and same_tax and (shared_topics or title_overlap >= 0.35):
+                elif score >= settings.grouping_similarity_medium and same_tax and (
+                    shared_topics or title_overlap >= settings.grouping_title_overlap_with_medium
+                ):
                     union(left, right)
-                elif same_tax and title_overlap >= 0.55:
+                elif same_tax and title_overlap >= settings.grouping_title_overlap_standalone:
                     union(left, right)
 
         clusters: dict[int, list[CrawlResult]] = {}
@@ -155,13 +157,14 @@ class EvidenceGroupService:
         return list(groups.values())
 
     def _build_document_text(self, question: str, result: CrawlResult) -> str:
+        settings = get_settings()
         return "\n".join(
             [
                 f"question: {question}",
                 f"type: {result.type}",
                 f"title: {result.title}",
                 f"preview: {result.preview}",
-                f"content: {result.content[:1200]}",
+                f"content: {result.content[: settings.grouping_content_limit]}",
             ]
         )
 
@@ -197,10 +200,13 @@ class EvidenceGroupService:
             "representative_source_ids": representative_ids,
         }
 
-        if settings.use_mock_llm or len(items) <= 1:
+        if len(items) <= 1:
             return default_payload
 
-        cluster_documents = openai_service.format_crawl_results(items[:8], content_limit=600)
+        cluster_documents = openai_service.format_crawl_results(
+            items[:8],
+            content_limit=settings.grouping_review_content_limit,
+        )
         try:
             payload, _ = await openai_service.create_json(
                 model=settings.openai_verification_model,

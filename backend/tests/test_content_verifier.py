@@ -44,3 +44,20 @@ async def test_content_partial():
     draft_partial = "주택 관련 혜택이 있습니다. [출처: mock_law_001]"
     results = await content_verifier.verify(draft_partial, _to_crawl_results(MOCK_CRAWL_RESULTS))
     assert any(item.verification_status == "partial" for item in results)
+
+
+@pytest.mark.asyncio
+async def test_content_hallucinated_by_contradiction_pair():
+    draft = "서민주택은 전액 면제됩니다. [출처: mock_law_001]"
+    results = await content_verifier.verify(draft, _to_crawl_results(MOCK_CRAWL_RESULTS))
+    assert any(item.verification_status == "hallucinated" for item in results)
+
+
+@pytest.mark.asyncio
+async def test_content_assertive_claim_without_citation_is_unsupported():
+    draft = "지방세특례제한법 제36조에 따라 취득세 50%를 경감합니다."
+    results = await content_verifier.verify(draft, _to_crawl_results(MOCK_CRAWL_RESULTS))
+    assert any(
+        item.verification_status == "unsupported" and "출처" in item.detail
+        for item in results
+    )

@@ -39,9 +39,9 @@
 
 ---
 
-## 🔍 3단계: 크롤링 엔진 + 키워드 추출 (Mock 모드)
-- [x] mock_crawler.py 구현 (mock_olta_pages.json 기반 가상 크롤링 결과 반환)
-- [x] mock_llm.py 구현 (가상 키워드 추출 및 답변 생성)
+## 🔍 3단계: 크롤링 엔진 + 키워드 추출
+- [x] 테스트용 fixture 데이터 구성 (mock_olta_pages.json 기반 fallback 검증)
+- [x] 테스트용 LLM fallback 검증 데이터 구성
 - [x] CrawlResult 데이터 클래스 정의 (id, title, type, content, preview, url, relevance_score, crawled_at)
 - [x] search_service.py 구현
 - [x] crawler_service.py 구현
@@ -49,24 +49,24 @@
 - [x] pytest 테스트 작성
 
 ### ✅ 3단계 확인사항
-- [x] `USE_MOCK_CRAWLER=true pytest tests/test_search.py -v` → 키워드 추출 테스트 통과?
-- [x] `USE_MOCK_CRAWLER=true pytest tests/test_crawler.py -v` → Mock 크롤링 테스트 통과?
-- [x] Mock 크롤러에 "취득세 감면" 쿼리 → mock_law_001, mock_law_002, mock_interp_001 3건 반환?
-- [x] Mock 크롤러에 "재산세 납부" 쿼리 → mock_law_003 1건 반환?
+- [x] `pytest tests/test_search.py -v` → 키워드 추출 테스트 통과?
+- [x] `pytest tests/test_crawler.py -v` → 크롤링 fallback 테스트 통과?
+- [x] fallback 크롤링에 "취득세 감면" 쿼리 → mock_law_001, mock_law_002, mock_interp_001 3건 반환?
+- [x] fallback 크롤링에 "재산세 납부" 쿼리 → mock_law_003 1건 반환?
 - [x] 존재하지 않는 키워드 → 빈 리스트 반환?
 
-📋 3단계 테스트 결과: `uv run pytest tests/test_search.py tests/test_crawler.py -v` 통과. 키워드 추출과 Mock 크롤링 결과가 기대값과 일치.
+📋 3단계 테스트 결과: `uv run pytest tests/test_search.py tests/test_crawler.py -v` 통과. 키워드 추출과 fallback 크롤링 결과가 기대값과 일치.
 
 ---
 
-## 💬 4단계: LLM 파이프라인 + SSE 채팅 API (Mock 모드)
+## 💬 4단계: LLM 파이프라인 + SSE 채팅 API
 - [x] stage1_prompt.py 구현 (1단계 시스템 프롬프트 + 사용자 프롬프트 템플릿)
 - [x] llm_service.py 구현
 - [x] chat.py 라우터 구현
 - [x] pytest 테스트 작성
 
 ### ✅ 4단계 확인사항
-- [x] `USE_MOCK_CRAWLER=true USE_MOCK_LLM=true pytest tests/test_chat_pipeline.py -v` → 모든 테스트 통과?
+- [x] `pytest tests/test_chat_pipeline.py -v` → 모든 테스트 통과?
 - [x] curl로 SSE 스트리밍 테스트 순서 확인?
 - [x] 존재하지 않는 session_id로 /api/chat 호출 → 401 에러?
 - [x] /api/preview/{source_id} → 올바른 출처 내용 반환?

@@ -52,7 +52,7 @@ async def test_final_generator_normal():
     verification = verification_aggregator.aggregate(sources, claims)
     final_answer = await final_generator.generate(MOCK_DRAFT_NORMAL, verification, evidence_slots, crawl_results)
     assert "📊 **답변 신뢰도**" in final_answer.answer
-    assert final_answer.confidence_label == "높음"
+    assert final_answer.confidence_label in ("높음", "매우 높음")
 
 
 @pytest.mark.asyncio

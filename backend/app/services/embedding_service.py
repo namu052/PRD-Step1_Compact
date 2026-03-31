@@ -1,5 +1,6 @@
 from app.config import get_settings
 from app.models.schemas import CrawlResult
+from app.services.openai_service import openai_service
 
 
 class EmbeddingService:
@@ -13,23 +14,58 @@ class EmbeddingService:
     ) -> list[CrawlResult]:
         settings = get_settings()
         limit = top_k or settings.answer_context_top_k
-        if settings.use_mock_crawler:
-            return results[:limit]
+        if not results:
+            return []
 
-        question_terms = self._tokenize(question)
         latest_year = max((result.document_year or 0 for result in results), default=0) or None
-        ranked = sorted(
-            results,
-            key=lambda result: self._score_result(
-                result,
-                question_terms,
-                preferred_year=preferred_year,
-                latest_year=latest_year,
-                prefer_latest=prefer_latest,
-            ),
-            reverse=True,
-        )
-        return self._select_diverse_results(ranked, limit)
+        try:
+            doc_texts = [self._build_embedding_text(result) for result in results]
+            embeddings = await openai_service.create_embeddings(
+                [question, *doc_texts],
+                settings.openai_embedding_model,
+            )
+            if len(embeddings) != len(results) + 1:
+                raise RuntimeError("unexpected embedding length")
+
+            question_embedding = embeddings[0]
+            scored = []
+            for index, result in enumerate(results):
+                semantic = openai_service.cosine_similarity(question_embedding, embeddings[index + 1])
+                overlap = self._term_overlap_score(question, result)
+                year_bonus = self._year_bonus(
+                    result.document_year,
+                    preferred_year=preferred_year,
+                    latest_year=latest_year,
+                    prefer_latest=prefer_latest,
+                )
+                combined = (
+                    semantic * settings.ranking_semantic_weight
+                    + overlap * settings.ranking_overlap_weight
+                    + result.relevance_score * settings.ranking_position_weight
+                    + year_bonus * settings.ranking_year_weight
+                )
+                scored.append((combined, result))
+
+            scored.sort(key=lambda item: item[0], reverse=True)
+            return self._select_diverse_results([result for _, result in scored], limit)
+        except Exception:
+            question_terms = self._tokenize(question)
+            ranked = sorted(
+                results,
+                key=lambda result: self._score_result(
+                    result,
+                    question_terms,
+                    preferred_year=preferred_year,
+                    latest_year=latest_year,
+                    prefer_latest=prefer_latest,
+                ),
+                reverse=True,
+            )
+            return self._select_diverse_results(ranked, limit)
+
+    def _build_embedding_text(self, result: CrawlResult) -> str:
+        settings = get_settings()
+        return f"{result.title} {result.preview} {result.content[: settings.embedding_content_limit]}"
 
     def _score_result(
         self,
@@ -39,8 +75,7 @@ class EmbeddingService:
         latest_year: int | None = None,
         prefer_latest: bool = True,
     ) -> tuple[float, float, float, float]:
-        haystack = f"{result.title} {result.preview} {result.content[:600]}".lower()
-        overlap = sum(1 for term in question_terms if term in haystack)
+        overlap = self._term_overlap_score(" ".join(question_terms), result)
         year_bonus = self._year_bonus(
             result.document_year,
             preferred_year=preferred_year,
@@ -51,6 +86,11 @@ class EmbeddingService:
 
     def _tokenize(self, text: str) -> set[str]:
         return {token.strip().lower() for token in text.split() if token.strip()}
+
+    def _term_overlap_score(self, question: str, result: CrawlResult) -> float:
+        question_terms = self._tokenize(question)
+        haystack = f"{result.title} {result.preview} {result.content[:600]}".lower()
+        return float(sum(1 for term in question_terms if term in haystack))
 
     def _year_bonus(
         self,
@@ -76,7 +116,8 @@ class EmbeddingService:
         if len(ranked) <= limit:
             return ranked
 
-        per_type_quota = max(1, limit // 6)
+        settings = get_settings()
+        per_type_quota = max(2, limit // settings.ranking_diversity_divisor)
         selected: list[CrawlResult] = []
         seen_ids = set()
         type_counts: dict[str, int] = {}

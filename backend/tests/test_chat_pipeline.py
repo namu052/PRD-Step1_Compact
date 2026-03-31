@@ -44,6 +44,8 @@ def test_chat_pipeline_stream_order():
     assert body.index("event: sources") > body.index('"stage": "finalizing"')
     assert body.rindex('"stage": "done"') > body.index("event: sources")
     assert '"confidence"' in body
+    assert "검증 세부 지표" in body
+    assert "초안 삭제:" in body or "초안 추가:" in body or "최종안 삭제:" in body or "최종안 추가:" in body
 
 
 def test_chat_requires_session():
