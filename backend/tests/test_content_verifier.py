@@ -41,14 +41,14 @@ async def test_content_unsupported():
 
 @pytest.mark.asyncio
 async def test_content_partial():
-    draft_partial = "주택 관련 혜택이 있습니다. [출처: mock_law_001]"
+    draft_partial = "주택 관련 혜택이 있습니다. [출처: test_law_001]"
     results = await content_verifier.verify(draft_partial, _to_crawl_results(MOCK_CRAWL_RESULTS))
     assert any(item.verification_status == "partial" for item in results)
 
 
 @pytest.mark.asyncio
 async def test_content_hallucinated_by_contradiction_pair():
-    draft = "서민주택은 전액 면제됩니다. [출처: mock_law_001]"
+    draft = "서민주택은 전액 면제됩니다. [출처: test_law_001]"
     results = await content_verifier.verify(draft, _to_crawl_results(MOCK_CRAWL_RESULTS))
     assert any(item.verification_status == "hallucinated" for item in results)
 

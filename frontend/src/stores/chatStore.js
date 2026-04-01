@@ -29,7 +29,7 @@ export const useChatStore = create((set, get) => ({
 
     set((state) => ({
       messages: [...state.messages, userMessage, aiMessage],
-      currentStage: 'crawling',
+      currentStage: 'searching',
       isStreaming: true,
       activeMessageId: aiMessageId,
       selectedSourceId: null,

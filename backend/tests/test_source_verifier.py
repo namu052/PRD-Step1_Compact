@@ -34,14 +34,14 @@ async def test_source_not_found():
 
 @pytest.mark.asyncio
 async def test_source_mismatch():
-    draft_mismatch = "제36조에 따르면 농업법인은 감면됩니다. [출처: mock_law_002]"
+    draft_mismatch = "제36조에 따르면 농업법인은 감면됩니다. [출처: test_law_002]"
     results = await source_verifier.verify(draft_mismatch, _to_crawl_results(MOCK_CRAWL_RESULTS))
     assert any(item.status == "mismatch" for item in results)
 
 
 @pytest.mark.asyncio
 async def test_source_mismatch_for_cited_percentage():
-    draft_mismatch = "취득세 70%를 감면합니다. [출처: mock_law_001]"
+    draft_mismatch = "취득세 70%를 감면합니다. [출처: test_law_001]"
     results = await source_verifier.verify(draft_mismatch, _to_crawl_results(MOCK_CRAWL_RESULTS))
     assert any(item.status == "mismatch" for item in results)
 
@@ -50,7 +50,7 @@ async def test_source_mismatch_for_cited_percentage():
 async def test_source_verifier_handles_multi_source_tag():
     draft = (
         "서민주택과 영농조합법인 모두 취득세 50% 경감 규정이 있습니다. "
-        "[출처: mock_law_001, mock_law_002]"
+        "[출처: test_law_001, test_law_002]"
     )
     results = await source_verifier.verify(draft, _to_crawl_results(MOCK_CRAWL_RESULTS))
-    assert {item.source_id for item in results} == {"mock_law_001", "mock_law_002"}
+    assert {item.source_id for item in results} == {"test_law_001", "test_law_002"}

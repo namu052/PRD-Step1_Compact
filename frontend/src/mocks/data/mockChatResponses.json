@@ -1,7 +1,7 @@
 {
   "취득세 감면": {
     "stages": [
-      { "stage": "crawling", "delay": 1500 },
+      { "stage": "searching", "delay": 1500 },
       { "stage": "drafting", "delay": 2000 },
       { "stage": "verifying", "delay": 1500 },
       { "stage": "done", "delay": 0 }
@@ -28,7 +28,7 @@
   },
   "재산세 납부": {
     "stages": [
-      { "stage": "crawling", "delay": 1000 },
+      { "stage": "searching", "delay": 1000 },
       { "stage": "drafting", "delay": 1500 },
       { "stage": "verifying", "delay": 1000 },
       { "stage": "done", "delay": 0 }

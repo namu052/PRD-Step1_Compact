@@ -1,6 +1,9 @@
+import logging
 import re
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 from app.models.schemas import CrawlResult
 from app.models.verification import ContentClaim
 from app.prompts.stage2_content_prompt import CONTENT_VERIFICATION_PROMPT
@@ -39,7 +42,6 @@ ASSERTIVE_CLAIM_PATTERN = re.compile(
 CONTRADICTION_PAIRS = [
     ("면제", "100분의 50"),
     ("면제", "경감"),
-    ("비과세", "감면"),
     ("100%", "100분의 50"),
     ("전액", "일부"),
     ("의무", "임의"),
@@ -102,7 +104,7 @@ class ContentVerifier:
                 schema_name="content_verifications",
                 schema=CONTENT_VERIFICATION_SCHEMA,
                 temperature=0.0,
-                max_tokens=2200,
+                max_tokens=3200,
             )
             return [
                 ContentClaim(
@@ -116,6 +118,7 @@ class ContentVerifier:
                 for item in payload.get("claims", [])
             ]
         except Exception:
+            logger.warning("LLM 콘텐츠 검증 실패, fallback 사용", exc_info=True)
             return self._fallback_verify(draft_answer, crawl_results)
 
     def _fallback_verify(
@@ -163,6 +166,9 @@ class ContentVerifier:
 
             contradicted = False
             for term_a, term_b in CONTRADICTION_PAIRS:
+                if term_a in text and term_b in text:
+                    contradicted = True
+                    break
                 if term_a in text and term_b in relevant_content and term_b not in text:
                     contradicted = True
                     break
@@ -189,7 +195,7 @@ class ContentVerifier:
                         claim_text=text,
                         cited_sources=claim["cited"],
                         verification_status="unsupported",
-                        confidence=0.05,
+                        confidence=settings.cv_confidence_no_source_assertive,
                         detail="단정적 주장이나 수치가 있으나 연결된 출처가 없음",
                         corrected_text=f"{text} ⚠️ *직접 근거 출처를 다시 지정해야 함*",
                     )
@@ -200,7 +206,7 @@ class ContentVerifier:
                         claim_text=text,
                         cited_sources=claim["cited"],
                         verification_status="supported",
-                        confidence=0.9,
+                        confidence=settings.cv_confidence_strong_supported,
                         detail=f"핵심 키워드 {matched}/{total}개 강하게 일치",
                     )
                 )

@@ -4,8 +4,8 @@ from app.services.verification.verification_aggregator import verification_aggre
 
 def test_aggregator_high_confidence():
     result = verification_aggregator.aggregate(
-        [SourceVerification(source_id="mock_law_001", status="verified")],
-        [ContentClaim(claim_text="정상 주장", cited_sources=["mock_law_001"], verification_status="supported", confidence=0.85)],
+        [SourceVerification(source_id="test_law_001", status="verified")],
+        [ContentClaim(claim_text="정상 주장", cited_sources=["test_law_001"], verification_status="supported", confidence=0.85)],
     )
     assert result.overall_confidence >= 0.7
     assert result.confidence_label in ("높음", "매우 높음")
@@ -23,11 +23,11 @@ def test_aggregator_with_hallucination():
 
 def test_aggregator_partial_claim():
     result = verification_aggregator.aggregate(
-        [SourceVerification(source_id="mock_law_001", status="verified")],
+        [SourceVerification(source_id="test_law_001", status="verified")],
         [
             ContentClaim(
                 claim_text="부분 주장",
-                cited_sources=["mock_law_001"],
+                cited_sources=["test_law_001"],
                 verification_status="partial",
                 confidence=0.5,
                 corrected_text="부분 주장 ⚠️ *일부 내용 확인 필요*",
@@ -40,11 +40,11 @@ def test_aggregator_partial_claim():
 
 def test_aggregator_very_high_confidence():
     result = verification_aggregator.aggregate(
-        [SourceVerification(source_id="mock_law_001", status="verified")],
+        [SourceVerification(source_id="test_law_001", status="verified")],
         [
             ContentClaim(
                 claim_text="제36조에 따라 취득세 50% 감면",
-                cited_sources=["mock_law_001"],
+                cited_sources=["test_law_001"],
                 verification_status="supported",
                 confidence=0.9,
             )
@@ -71,11 +71,11 @@ def test_aggregator_caps_confidence_when_source_fails():
 
 def test_aggregator_tracks_component_scores():
     result = verification_aggregator.aggregate(
-        [SourceVerification(source_id="mock_law_001", status="verified")],
+        [SourceVerification(source_id="test_law_001", status="verified")],
         [
             ContentClaim(
                 claim_text="제36조에 따라 취득세 50% 감면",
-                cited_sources=["mock_law_001"],
+                cited_sources=["test_law_001"],
                 verification_status="supported",
                 confidence=0.9,
             )
@@ -88,13 +88,13 @@ def test_aggregator_tracks_component_scores():
 def test_aggregator_tracks_citation_health_metrics():
     result = verification_aggregator.aggregate(
         [
-            SourceVerification(source_id="mock_law_001", status="verified"),
+            SourceVerification(source_id="test_law_001", status="verified"),
             SourceVerification(source_id="src_999", status="not_found"),
         ],
         [
             ContentClaim(
                 claim_text="제36조에 따라 취득세 50% 감면",
-                cited_sources=["mock_law_001"],
+                cited_sources=["test_law_001"],
                 verification_status="supported",
                 confidence=0.9,
             ),

@@ -1,6 +1,9 @@
+import logging
 import re
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 from app.models.evidence import EvidenceSlot, SlotVerification
 from app.prompts.grouped_verification_prompt import GROUPED_VERIFICATION_PROMPT
 from app.services.openai_service import openai_service
@@ -58,9 +61,11 @@ class GroupedAnswerVerifier:
                 for item in payload.get("slot_verifications", [])
             ]
         except Exception:
+            logger.warning("LLM 근거묶음 검증 실패, fallback 사용", exc_info=True)
             return self._fallback_verify(final_answer, evidence_slots)
 
     def _fallback_verify(self, final_answer: str, evidence_slots: list[EvidenceSlot]) -> list[SlotVerification]:
+        settings = get_settings()
         answer_text = re.sub(r"\s+", " ", final_answer).lower()
         results = []
         for slot in evidence_slots:
@@ -75,11 +80,11 @@ class GroupedAnswerVerifier:
             overlap = sum(1 for term in unique_terms if term in answer_text)
             ratio = overlap / len(unique_terms) if unique_terms else 0.0
             if ratio >= 0.3:
-                results.append(SlotVerification(slot_id=slot.slot_id, status="supported", confidence=0.85, detail="묶음 요지가 최종 답변에 반영됨"))
+                results.append(SlotVerification(slot_id=slot.slot_id, status="supported", confidence=settings.slot_fallback_supported, detail="묶음 요지가 최종 답변에 반영됨"))
             elif ratio >= 0.15:
-                results.append(SlotVerification(slot_id=slot.slot_id, status="partial", confidence=0.55, detail="묶음 요지가 부분 반영됨"))
+                results.append(SlotVerification(slot_id=slot.slot_id, status="partial", confidence=settings.slot_fallback_partial, detail="묶음 요지가 부분 반영됨"))
             else:
-                results.append(SlotVerification(slot_id=slot.slot_id, status="unused", confidence=0.2, detail="최종 답변에서 묶음 사용 흔적이 약함"))
+                results.append(SlotVerification(slot_id=slot.slot_id, status="unused", confidence=settings.slot_fallback_unused, detail="최종 답변에서 묶음 사용 흔적이 약함"))
         return results
 
 

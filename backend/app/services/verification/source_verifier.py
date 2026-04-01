@@ -1,6 +1,9 @@
+import logging
 import re
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 from app.models.schemas import CrawlResult
 from app.models.verification import SourceVerification
 from app.prompts.stage2_source_prompt import SOURCE_VERIFICATION_PROMPT
@@ -63,6 +66,7 @@ class SourceVerifier:
                 for item in payload.get("verifications", [])
             ]
         except Exception:
+            logger.warning("LLM 출처 검증 실패, fallback 사용", exc_info=True)
             return self._fallback_verify(draft_answer, crawl_results)
 
     def _fallback_verify(
@@ -75,6 +79,15 @@ class SourceVerifier:
         verifications = []
 
         for sid in all_ids:
+            if sid.startswith("web_"):
+                verifications.append(
+                    SourceVerification(
+                        source_id=sid,
+                        status="verified",
+                        detail="웹 검색 출처 (OLTA 검증 대상 아님)",
+                    )
+                )
+                continue
             if sid not in crawl_map:
                 verifications.append(
                     SourceVerification(
@@ -99,19 +112,19 @@ class SourceVerifier:
                 continue
 
             cited_lines = cited_lines_by_source.get(sid, [])
-            expected_article = re.search(r"제(\d+)조", result.title)
+            source_articles = set(re.findall(r"제(\d+)조", result.content))
             cited_articles = []
             for line in cited_lines:
                 cited_articles.extend(re.findall(r"제(\d+)조", line))
 
-            if expected_article and cited_articles and expected_article.group(1) not in cited_articles:
+            if cited_articles and not any(article in source_articles for article in cited_articles):
                 verifications.append(
                     SourceVerification(
                         source_id=sid,
                         title=result.title,
                         url=result.url,
                         status="mismatch",
-                        detail=f"초안의 조문 번호가 원본 {expected_article.group(0)}와 일치하지 않음",
+                        detail=f"초안에서 인용한 조문({', '.join(f'제{a}조' for a in cited_articles)})이 원본에 존재하지 않음",
                     )
                 )
                 continue

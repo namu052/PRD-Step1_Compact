@@ -1,11 +1,14 @@
 import asyncio
+import logging
 import re
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Optional
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 from app.models.evidence import EvidenceSlot
-from app.models.schemas import CrawlResult
+from app.models.schemas import CrawlResult, WebSearchResult
 from app.models.verification import VerificationResult
 from app.prompts.grouped_answer_prompt import (
     GROUPED_ANSWER_SYSTEM_PROMPT,
@@ -14,6 +17,7 @@ from app.prompts.grouped_answer_prompt import (
 from app.prompts.revision_prompt import REVISION_SYSTEM_PROMPT, REVISION_USER_PROMPT
 from app.prompts.stage1_prompt import NO_RESULTS_ANSWER
 from app.prompts.stage1_prompt import STAGE1_SYSTEM_PROMPT, STAGE1_USER_PROMPT
+from app.prompts.web_draft_prompt import WEB_DRAFT_SYSTEM_PROMPT, WEB_DRAFT_USER_PROMPT
 from app.services.openai_service import openai_service
 
 
@@ -63,9 +67,84 @@ class LLMService:
                 on_token=on_token,
             )
         except Exception:
+            logger.warning("LLM 초안 생성 실패, fallback 사용", exc_info=True)
             return await self._fallback_generate(question, crawl_results, on_token)
         cited_sources = self._extract_cited_sources(answer, crawl_results)
         return DraftResponse(answer=answer, cited_sources=cited_sources, token_usage=usage)
+
+    async def generate_web_draft(
+        self,
+        question: str,
+        web_results: list[WebSearchResult],
+        on_token: Optional[Callable[[str], Awaitable[None]]] = None,
+    ) -> DraftResponse:
+        settings = get_settings()
+
+        if not web_results:
+            if on_token:
+                for index in range(0, len(NO_RESULTS_ANSWER), 5):
+                    await on_token(NO_RESULTS_ANSWER[index : index + 5])
+                    await asyncio.sleep(0.03)
+            return DraftResponse(answer=NO_RESULTS_ANSWER, cited_sources=[], token_usage={})
+
+        formatted = self._format_web_results(web_results)
+        system_prompt = WEB_DRAFT_SYSTEM_PROMPT.format(web_results=formatted)
+        user_prompt = WEB_DRAFT_USER_PROMPT.format(question=question)
+
+        try:
+            answer, usage = await openai_service.create_text(
+                model=settings.openai_model,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                temperature=settings.draft_temperature,
+                max_tokens=settings.draft_max_tokens,
+                on_token=on_token,
+            )
+        except Exception:
+            logger.warning("LLM 웹 초안 생성 실패, fallback 사용", exc_info=True)
+            return self._fallback_web_draft(question, web_results, on_token)
+
+        cited_sources = re.findall(r"\[출처:\s*(web_\d+)\]", answer)
+        return DraftResponse(
+            answer=answer,
+            cited_sources=list(dict.fromkeys(cited_sources)),
+            token_usage=usage,
+        )
+
+    def _format_web_results(self, web_results: list[WebSearchResult]) -> str:
+        blocks = []
+        for idx, result in enumerate(web_results, 1):
+            blocks.append(
+                "\n".join([
+                    f"- source_id: web_{idx:03d}",
+                    f"  title: {result.title}",
+                    f"  url: {result.url}",
+                    f"  content: {result.content[:1400]}",
+                ])
+            )
+        return "\n\n".join(blocks)
+
+    def _fallback_web_draft(
+        self,
+        question: str,
+        web_results: list[WebSearchResult],
+        on_token,
+    ) -> DraftResponse:
+        lines = [f"## {question}", ""]
+        for idx, result in enumerate(web_results, 1):
+            lines.append(f"- {result.title} [출처: web_{idx:03d}]")
+        lines.append("")
+        lines.append("---")
+        lines.append("**참고 출처**")
+        for idx, result in enumerate(web_results, 1):
+            lines.append(f"- web_{idx:03d}: {result.url}")
+
+        answer = "\n".join(lines)
+        return DraftResponse(
+            answer=answer,
+            cited_sources=[f"web_{i:03d}" for i in range(1, len(web_results) + 1)],
+            token_usage={},
+        )
 
     async def revise_draft(
         self,
@@ -97,6 +176,7 @@ class LLMService:
                 max_tokens=settings.revision_max_tokens,
             )
         except Exception:
+            logger.warning("LLM 초안 수정 실패, fallback 사용", exc_info=True)
             answer = self._fallback_revise(draft_answer, verification_result)
             usage = {}
         cited_sources = self._extract_cited_sources(answer, crawl_results)
@@ -167,29 +247,10 @@ class LLMService:
         )
 
     def _build_fallback_lines(self, question: str, crawl_results: list[CrawlResult]) -> list[str]:
-        templates = {
-            "mock_law_001": [
-                "**지방세특례제한법 제36조**에 따르면 서민주택 취득 시 취득세 50%를 경감합니다. [출처: mock_law_001]",
-                "취득가액 1억원 이하의 주택이 감면 대상입니다. [출처: mock_law_001]",
-            ],
-            "mock_law_002": [
-                "영농조합법인이 농업에 직접 사용하기 위하여 취득하는 부동산도 감면 대상입니다. [출처: mock_law_002]",
-            ],
-            "mock_interp_001": [
-                "서민주택 감면은 주택과 그 부속토지를 포함하여 적용하는 것이 타당합니다. [출처: mock_interp_001]",
-            ],
-            "mock_law_003": [
-                "**지방세법 제115조**에 따르면 재산세 납기는 토지는 9월 16일부터 9월 30일까지입니다. [출처: mock_law_003]",
-                "건축물은 7월 16일부터 7월 31일까지, 주택은 7월과 9월로 나누어 납부합니다. [출처: mock_law_003]",
-            ],
-        }
-
         lines = [f"## {question}", ""]
-        used = []
         for result in crawl_results:
-            used.extend(templates.get(result.id, [f"{result.title} [출처: {result.id}]"]))
+            lines.append(f"{result.title} [출처: {result.id}]")
 
-        lines.extend(used)
         lines.append("")
         lines.append("---")
         lines.append("📌 **참고 출처**")

@@ -1,11 +1,12 @@
 import asyncio
-import json
+import logging
 import math
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from urllib.parse import urljoin
+
+logger = logging.getLogger(__name__)
 
 from playwright.async_api import BrowserContext, Page, async_playwright
 
@@ -64,24 +65,13 @@ class SearchCard:
 
 
 class CrawlerService:
-    def __init__(self) -> None:
-        self._fallback_data = None
-
-    def _load_fallback_data(self) -> dict:
-        if self._fallback_data is None:
-            mock_path = (
-                Path(__file__).resolve().parent.parent.parent / "tests" / "mocks" / "mock_olta_pages.json"
-            )
-            with mock_path.open("r", encoding="utf-8") as file:
-                self._fallback_data = json.load(file)
-        return self._fallback_data
-
     async def search(self, session, queries: list[str], categories: list[str] | None = None) -> list[CrawlResult]:
         del session
         try:
             return await self._real_search(queries, categories)
         except Exception:
-            return self._fallback_search(queries, categories)
+            logger.warning("OLTA 크롤링 실패, 빈 결과 반환", exc_info=True)
+            return []
 
     async def _real_search(
         self,
@@ -403,38 +393,6 @@ class CrawlerService:
         if not match:
             return 0
         return int(match.group(1).replace(",", ""))
-
-    def _fallback_search(self, queries: list[str], categories: list[str] | None = None) -> list[CrawlResult]:
-        data = self._load_fallback_data()
-        results = []
-        seen_ids = set()
-        target_categories = categories or ["law_search", "interpret_search"]
-
-        for query in queries:
-            for category in target_categories:
-                category_data = data.get(category, {})
-                for keyword, items in category_data.items():
-                    if query in keyword or keyword in query:
-                        for item in items:
-                            if item["id"] in seen_ids:
-                                continue
-                            seen_ids.add(item["id"])
-                            results.append(
-                                CrawlResult(
-                                    id=item["id"],
-                                    title=item["title"],
-                                    type=item["type"],
-                                    content=item["content"],
-                                    preview=f"{item['content'][:100]}...",
-                                    url=item["url"],
-                                    relevance_score=0.9,
-                                    document_year=self._extract_document_year(
-                                        " ".join([item["title"], item["content"]])
-                                    ),
-                                    crawled_at=datetime.now(),
-                                )
-                            )
-        return results
 
     def _extract_document_year(self, text: str) -> int | None:
         years = re.findall(r"(?<!\d)((?:19|20)\d{2})(?:년)?(?!\d)", text or "")

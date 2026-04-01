@@ -1,10 +1,13 @@
 import asyncio
+import logging
 import re
 from typing import Awaitable, Callable, Optional
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 from app.models.evidence import EvidenceSlot
-from app.models.schemas import CrawlResult
+from app.models.schemas import CrawlResult, VerificationHistory
 from app.models.verification import FinalAnswer, VerificationResult
 from app.prompts.stage2_final_prompt import FINAL_ANSWER_PROMPT
 from app.services.openai_service import openai_service
@@ -18,10 +21,18 @@ class FinalGenerator:
         evidence_slots: list[EvidenceSlot],
         crawl_results: list[CrawlResult],
         on_token: Optional[Callable[[str], Awaitable[None]]] = None,
+        verification_history: VerificationHistory | None = None,
     ) -> FinalAnswer:
         settings = get_settings()
         streamed = False
         try:
+            history_section = ""
+            if verification_history and verification_history.rounds:
+                history_section = (
+                    "\n\n## 검증 이력\n"
+                    "아래 검증 이력을 답변 서두에 간략히 요약하여 포함하라:\n"
+                    + verification_history.to_summary()
+                )
             answer, _ = await openai_service.create_text(
                 model=settings.openai_final_model,
                 system_prompt="너는 지방세 답변 최종 편집자이다. 반드시 Markdown 답변만 출력하라.",
@@ -36,13 +47,14 @@ class FinalGenerator:
                     ),
                     confidence_label=verification_result.confidence_label,
                     confidence_score=round(verification_result.overall_confidence * 100, 1),
-                ),
+                ) + history_section,
                 temperature=0.1,
                 max_tokens=settings.final_max_tokens,
                 on_token=on_token,
             )
             streamed = on_token is not None
         except Exception:
+            logger.warning("LLM 최종 답변 생성 실패, fallback 사용", exc_info=True)
             answer = self._fallback_generate(draft_answer, verification_result, evidence_slots)
         if on_token and not streamed:
             for index in range(0, len(answer), 5):

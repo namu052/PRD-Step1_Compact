@@ -28,9 +28,9 @@ class VerificationAggregator:
                 has_verified_citation = bool(statuses) and all(status == "verified" for status in statuses)
                 if any(status == "not_found" for status in statuses):
                     adjusted *= settings.aggregator_penalty_not_found
-                elif any(status == "mismatch" for status in statuses):
+                if any(status == "mismatch" for status in statuses):
                     adjusted *= settings.aggregator_penalty_mismatch
-                elif any(status == "expired" for status in statuses):
+                if any(status == "expired" for status in statuses):
                     adjusted *= settings.aggregator_penalty_expired
             else:
                 adjusted *= settings.aggregator_penalty_no_citation

@@ -83,6 +83,16 @@ class Settings(BaseSettings):
     cv_confidence_supported: float = 0.85
     cv_confidence_partial: float = 0.5
     cv_confidence_unsupported: float = 0.2
+    cv_confidence_strong_supported: float = 0.9
+    cv_confidence_no_source_assertive: float = 0.05
+
+    slot_fallback_supported: float = 0.85
+    slot_fallback_partial: float = 0.55
+    slot_fallback_unused: float = 0.2
+
+    web_search_max_results: int = 5
+    max_research_iterations: int = 2
+    research_confidence_threshold: float = 0.75
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

@@ -51,7 +51,7 @@ function createSSEStream(responseData) {
 function createDefaultSSEStream() {
   return createSSEStream({
     stages: [
-      { stage: 'crawling', delay: 1000 },
+      { stage: 'searching', delay: 1000 },
       { stage: 'drafting', delay: 600 },
       { stage: 'verifying', delay: 400 },
     ],

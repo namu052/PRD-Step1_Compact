@@ -4,6 +4,54 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class WebSearchResult(BaseModel):
+    title: str
+    url: str
+    content: str
+    score: float = 0.0
+
+
+class VerificationRound(BaseModel):
+    round_number: int
+    confidence: float
+    gaps_found: list[str] = []
+    actions_taken: str = ""
+
+
+class VerificationHistory(BaseModel):
+    rounds: list[VerificationRound] = []
+    final_confidence: float = 0.0
+
+    def add_round(
+        self,
+        confidence: float,
+        gaps: list[str] | None = None,
+        actions: str = "",
+    ) -> None:
+        self.rounds.append(
+            VerificationRound(
+                round_number=len(self.rounds) + 1,
+                confidence=confidence,
+                gaps_found=gaps or [],
+                actions_taken=actions,
+            )
+        )
+        self.final_confidence = confidence
+
+    def to_summary(self) -> str:
+        if not self.rounds:
+            return "검증 이력 없음"
+        lines = []
+        for r in self.rounds:
+            gaps_text = f" | 미비점: {', '.join(r.gaps_found[:3])}" if r.gaps_found else ""
+            lines.append(
+                f"- {r.round_number}차 검증: 신뢰도 {round(r.confidence * 100, 1)}%{gaps_text}"
+                + (f" | {r.actions_taken}" if r.actions_taken else "")
+            )
+        lines.append(f"- 최종 신뢰도: {round(self.final_confidence * 100, 1)}%")
+        return "\n".join(lines)
+
+
 class AuthRequest(BaseModel):
     cert_id: str
     password: str
