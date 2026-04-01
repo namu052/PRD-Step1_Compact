@@ -15,6 +15,8 @@ class EvidenceGroup:
     primary_topic: str = ""
     source_types: list[str] = field(default_factory=list)
     review_notes: list[str] = field(default_factory=list)
+    # 통합 요약 (클러스터 리뷰 시 함께 생성)
+    precomputed_summary: dict | None = None
 
 
 @dataclass

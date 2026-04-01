@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Union
 
@@ -19,18 +20,23 @@ class WebSearchService:
             queries = [queries]
 
         limit = max_results or settings.web_search_max_results
-        all_results: list[WebSearchResult] = []
-        seen_urls: set[str] = set()
 
-        for query in queries:
+        async def _safe_search(query: str) -> list[WebSearchResult]:
             try:
-                results = await self._search_single(query, limit)
-                for r in results:
-                    if r.url not in seen_urls:
-                        seen_urls.add(r.url)
-                        all_results.append(r)
+                return await self._search_single(query, limit)
             except Exception:
                 logger.warning("DuckDuckGo 검색 실패: query=%s", query, exc_info=True)
+                return []
+
+        batch_results = await asyncio.gather(*(_safe_search(q) for q in queries))
+
+        all_results: list[WebSearchResult] = []
+        seen_urls: set[str] = set()
+        for results in batch_results:
+            for r in results:
+                if r.url not in seen_urls:
+                    seen_urls.add(r.url)
+                    all_results.append(r)
 
         return all_results
 

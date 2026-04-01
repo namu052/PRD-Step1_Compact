@@ -13,11 +13,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.session_manager import session_manager
 from app.routers import auth, chat
+from app.services.crawler_service import crawler_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
+    await crawler_service.close_browser()
     await session_manager.cleanup_expired()
 
 

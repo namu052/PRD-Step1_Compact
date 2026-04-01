@@ -107,6 +107,7 @@ class CrawlResult(BaseModel):
     url: str
     relevance_score: float = 0.0
     document_year: Optional[int] = None
+    comments: str = ""
     crawled_at: datetime = Field(default_factory=datetime.now)
 
     def to_source_card(self) -> dict:
@@ -123,6 +124,7 @@ class CrawlResult(BaseModel):
             "title": self.title,
             "type": self.type,
             "content": self.content,
+            "comments": self.comments,
             "url": self.url,
             "document_year": self.document_year,
             "crawled_at": self.crawled_at.isoformat(),

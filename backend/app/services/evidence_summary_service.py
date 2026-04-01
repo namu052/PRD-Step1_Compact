@@ -1,3 +1,5 @@
+import asyncio
+
 from app.config import get_settings
 from app.models.evidence import EvidenceGroup, EvidenceSlot
 from app.models.schemas import CrawlResult
@@ -58,13 +60,13 @@ class EvidenceSummaryService:
         crawl_results: list[CrawlResult],
     ) -> list[EvidenceSlot]:
         crawl_map = {result.id: result for result in crawl_results}
-        slots = []
+        tasks = []
         for group in groups:
             group_sources = [crawl_map[source_id] for source_id in group.source_ids if source_id in crawl_map]
             if not group_sources:
                 continue
-            slots.append(await self._summarize_group(question, group, group_sources))
-        return slots
+            tasks.append(self._summarize_group(question, group, group_sources))
+        return list(await asyncio.gather(*tasks))
 
     async def _summarize_group(
         self,
@@ -74,38 +76,44 @@ class EvidenceSummaryService:
     ) -> EvidenceSlot:
         settings = get_settings()
         representative_sources = self._pick_representative_sources(group, group_sources)
-        try:
-            group_documents = openai_service.format_crawl_results(
-                group_sources,
-                content_limit=settings.summary_content_limit,
-            )
-            payload, _ = await openai_service.create_json(
-                model=settings.openai_summarization_model,
-                system_prompt="너는 지방세 근거 문서를 묶어 요약하는 전문가이다. 반드시 JSON schema만 출력하라.",
-                user_prompt=EVIDENCE_SUMMARY_PROMPT.format(
-                    question=question,
-                    group_documents=group_documents,
-                ),
-                schema_name="evidence_group_summary",
-                schema=SUMMARY_SCHEMA,
-                temperature=0.1,
-                max_tokens=settings.summary_max_tokens,
-            )
-        except Exception:
-            return self._fallback_summary(group, group_sources)
+
+        # 통합 리뷰에서 이미 요약이 생성된 경우 LLM 호출 생략
+        if group.precomputed_summary and group.precomputed_summary.get("summary"):
+            payload = group.precomputed_summary
+        else:
+            try:
+                group_documents = openai_service.format_crawl_results(
+                    group_sources,
+                    content_limit=settings.summary_content_limit,
+                )
+                payload, _ = await openai_service.create_json(
+                    model=settings.openai_summarization_model,
+                    system_prompt="너는 지방세 근거 문서를 묶어 요약하는 전문가이다. 반드시 JSON schema만 출력하라.",
+                    user_prompt=EVIDENCE_SUMMARY_PROMPT.format(
+                        question=question,
+                        group_documents=group_documents,
+                    ),
+                    schema_name="evidence_group_summary",
+                    schema=SUMMARY_SCHEMA,
+                    temperature=0.1,
+                    max_tokens=settings.summary_max_tokens,
+                )
+            except Exception:
+                return self._fallback_summary(group, group_sources)
+
         return EvidenceSlot(
             slot_id=f"slot_{group.group_id}",
             group_id=group.group_id,
-            title=payload["title"],
-            summary=payload["summary"],
-            issue=payload["issue"],
-            conclusion=payload["conclusion"],
-            applicability=payload["applicability"],
-            exceptions=payload["exceptions"][:4],
-            conflicts=payload["conflicts"][:4],
-            fact_distinctions=payload["fact_distinctions"][:4],
-            practice_notes=payload["practice_notes"][:4],
-            key_points=payload["key_points"][:6],
+            title=payload.get("title", group.theme),
+            summary=payload.get("summary", group.theme),
+            issue=payload.get("issue", ""),
+            conclusion=payload.get("conclusion", ""),
+            applicability=payload.get("applicability", ""),
+            exceptions=payload.get("exceptions", [])[:4],
+            conflicts=payload.get("conflicts", [])[:4],
+            fact_distinctions=payload.get("fact_distinctions", [])[:4],
+            practice_notes=payload.get("practice_notes", [])[:4],
+            key_points=payload.get("key_points", [])[:6],
             representative_source_ids=[item.id for item in representative_sources],
             representative_links=[item.url for item in representative_sources],
             source_type_summary=group.source_types[:4],

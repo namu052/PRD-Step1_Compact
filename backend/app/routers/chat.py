@@ -110,12 +110,61 @@ async def chat(payload: ChatRequest):
         history = VerificationHistory()
 
         # ──────────────────────────────────────────────
-        # Stage 1: 웹 검색 + 초안 작성
+        # Stage 1: 웹 검색+초안 과 OLTA 파이프라인 병렬 실행
         # ──────────────────────────────────────────────
         yield sse_event("stage_change", {"stage": "searching"})
         search_plan = await search_service.build_search_plan(payload.question)
         yield stage_notice(search_plan.to_notice())
 
+        # --- OLTA 브랜치 (백그라운드) ---
+        olta_result_holder: dict = {}
+        olta_notices: list[str] = []
+
+        async def olta_branch():
+            try:
+                olta_logged_in = await crawler_service.check_olta_login()
+            except Exception:
+                olta_logged_in = False
+            olta_result_holder["logged_in"] = olta_logged_in
+
+            if olta_logged_in:
+                olta_notices.append(stage_notice("OLTA 로그인 확인 완료 - 기타(BBS) 게시판 포함 전체 수집합니다."))
+            else:
+                olta_notices.append(sse_event("olta_login_required", {
+                    "message": "OLTA 미로그인 상태입니다. 기타(BBS) 게시판 수집이 제한됩니다. OLTA 로그인 후 더 정확한 답변을 받을 수 있습니다.",
+                }))
+                olta_notices.append(stage_notice("OLTA 미로그인 - 기존 법령/판례 자료만 수집합니다."))
+
+            crawl_results = await crawler_service.search(
+                session,
+                search_plan.keywords,
+                search_plan.categories,
+            )
+            ranked_results = await embedding_service.rank_results(
+                payload.question,
+                crawl_results,
+                preferred_year=search_plan.detected_year,
+                prefer_latest=search_plan.prefer_latest,
+            )
+
+            evidence_groups = await evidence_group_service.group(payload.question, ranked_results)
+            slots = await evidence_summary_service.summarize(
+                payload.question,
+                evidence_groups,
+                ranked_results,
+            )
+
+            olta_notices.append(stage_notice(
+                f"OLTA 자료 수집 완료: {len(crawl_results)}건 수집, "
+                f"{len(ranked_results)}건 우선 검토, 근거 묶음 {len(slots)}개 정리."
+            ))
+
+            olta_result_holder["ranked_results"] = ranked_results
+            olta_result_holder["evidence_slots"] = slots
+
+        olta_task = asyncio.create_task(olta_branch())
+
+        # --- 웹 브랜치 (스트리밍) ---
         web_results = await web_search_service.search(
             search_plan.keywords or [payload.question],
         )
@@ -148,44 +197,25 @@ async def chat(payload: ChatRequest):
         draft = await draft_task
         yield stage_notice("초안 작성 완료: 웹 검색 결과를 기반으로 1차 답변 초안을 만들었습니다.")
 
+        # --- OLTA 브랜치 완료 대기 ---
+        await olta_task
+        for notice in olta_notices:
+            yield notice
+
+        ranked_results = olta_result_holder.get("ranked_results", [])
+        evidence_slots = olta_result_holder.get("evidence_slots", [])
+
         # ──────────────────────────────────────────────
         # Stage 2: OLTA 검증
         # ──────────────────────────────────────────────
         final_answer = None
         verification_result = None
-        all_olta_results: list[CrawlResult] = []
-        evidence_slots: list[EvidenceSlot] = []
-        evidence_slot_results: list[CrawlResult] = []
+        all_olta_results: list[CrawlResult] = list(ranked_results)
+        evidence_slot_results: list[CrawlResult] = [slot.to_crawl_result() for slot in evidence_slots]
         process_summaries: list[CrawlResult] = []
 
         try:
             yield sse_event("stage_change", {"stage": "verifying"})
-
-            crawl_results = await crawler_service.search(
-                session,
-                search_plan.keywords,
-                search_plan.categories,
-            )
-            ranked_results = await embedding_service.rank_results(
-                payload.question,
-                crawl_results,
-                preferred_year=search_plan.detected_year,
-                prefer_latest=search_plan.prefer_latest,
-            )
-            all_olta_results = list(ranked_results)
-
-            evidence_groups = await evidence_group_service.group(payload.question, ranked_results)
-            evidence_slots = await evidence_summary_service.summarize(
-                payload.question,
-                evidence_groups,
-                ranked_results,
-            )
-            evidence_slot_results = [slot.to_crawl_result() for slot in evidence_slots]
-
-            yield stage_notice(
-                f"OLTA 자료 수집 완료: {len(crawl_results)}건 수집, "
-                f"{len(ranked_results)}건 우선 검토, 근거 묶음 {len(evidence_slots)}개 정리."
-            )
 
             session.crawl_cache = {
                 result.id: result for result in [*ranked_results, *evidence_slot_results]
@@ -232,10 +262,12 @@ async def chat(payload: ChatRequest):
                     f"'{', '.join(gap_analysis.search_queries[:2])}' 키워드로 추가 검색합니다."
                 )
 
-                # 추가 웹 검색 + OLTA 검색
-                extra_web = await web_search_service.search(gap_analysis.search_queries)
-                extra_olta_raw = await crawler_service.search(
-                    session, gap_analysis.search_queries, search_plan.categories,
+                # 추가 웹 검색 + OLTA 검색 (병렬)
+                extra_web, extra_olta_raw = await asyncio.gather(
+                    web_search_service.search(gap_analysis.search_queries),
+                    crawler_service.search(
+                        session, gap_analysis.search_queries, search_plan.categories,
+                    ),
                 )
                 extra_olta = await embedding_service.rank_results(
                     payload.question, extra_olta_raw,

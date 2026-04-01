@@ -93,7 +93,7 @@ class LLMService:
 
         try:
             answer, usage = await openai_service.create_text(
-                model=settings.openai_model,
+                model=settings.openai_verification_model,
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=settings.draft_temperature,
@@ -169,7 +169,7 @@ class LLMService:
 
         try:
             answer, usage = await openai_service.create_text(
-                model=settings.openai_model,
+                model=settings.openai_verification_model,
                 system_prompt=REVISION_SYSTEM_PROMPT,
                 user_prompt=feedback_prompt,
                 temperature=settings.revision_temperature,

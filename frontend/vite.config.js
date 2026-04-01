@@ -222,7 +222,7 @@ export default defineConfig(({ mode }) => {
     plugins: useMockFrontend ? [react(), tailwindcss(), gpkiPlugin()] : [react(), tailwindcss()],
     server: {
       proxy: {
-        '/api': 'http://127.0.0.1:8000',
+        '/api': 'http://127.0.0.1:8001',
       },
     },
   }

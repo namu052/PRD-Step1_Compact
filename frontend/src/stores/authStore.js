@@ -111,4 +111,50 @@ export const useAuthStore = create((set) => ({
   resetSession: () => set(loggedOutState),
 
   clearError: () => set({ loginError: null }),
+
+  // OLTA 로그인 상태 관리
+  oltaLoggedIn: false,
+  oltaChecking: false,
+  oltaMessage: null,
+
+  checkOltaLogin: async () => {
+    set({ oltaChecking: true })
+    try {
+      const res = await fetch('/api/auth/olta-status')
+      const data = await res.json()
+      set({ oltaLoggedIn: data.logged_in, oltaChecking: false, oltaMessage: null })
+      return data.logged_in
+    } catch {
+      set({ oltaChecking: false, oltaMessage: 'OLTA 상태 확인 실패' })
+      return false
+    }
+  },
+
+  openOltaLogin: async () => {
+    set({ oltaChecking: true, oltaMessage: '브라우저에서 OLTA 로그인 페이지를 여는 중...' })
+    try {
+      const res = await fetch('/api/auth/olta-login', { method: 'POST' })
+      const data = await res.json()
+      set({ oltaChecking: false, oltaMessage: data.message })
+    } catch {
+      set({ oltaChecking: false, oltaMessage: 'OLTA 로그인 페이지 열기 실패' })
+    }
+  },
+
+  verifyOltaLogin: async () => {
+    set({ oltaChecking: true })
+    try {
+      const res = await fetch('/api/auth/olta-verify', { method: 'POST' })
+      const data = await res.json()
+      set({
+        oltaLoggedIn: data.success,
+        oltaChecking: false,
+        oltaMessage: data.message,
+      })
+      return data.success
+    } catch {
+      set({ oltaChecking: false, oltaMessage: 'OLTA 로그인 확인 실패' })
+      return false
+    }
+  },
 }))

@@ -15,8 +15,10 @@ class Settings(BaseSettings):
     playwright_timeout: int = 10000
     olta_base_url: str = "https://www.olta.re.kr"
     olta_max_results_per_query: int = 8
-    olta_max_pages_per_collection: int | None = None
-    olta_max_detail_fetch: int = 32
+    olta_max_pages_per_collection: int | None = 3
+    olta_max_detail_fetch: int = 20
+    olta_bbs_max_pages_per_board: int = 2
+    olta_bbs_concurrency: int = 3
     answer_context_top_k: int = 40
     verification_target_confidence: float = 0.8
     max_verification_rounds: int = 5
@@ -91,7 +93,7 @@ class Settings(BaseSettings):
     slot_fallback_unused: float = 0.2
 
     web_search_max_results: int = 5
-    max_research_iterations: int = 2
+    max_research_iterations: int = 1
     research_confidence_threshold: float = 0.75
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

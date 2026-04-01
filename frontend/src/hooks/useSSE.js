@@ -90,6 +90,11 @@ export function useSSE() {
           return
         }
 
+        if (eventType === 'olta_login_required') {
+          addSystemMessage(data.message || 'OLTA 미로그인 상태입니다.')
+          return
+        }
+
         if (eventType === 'sources') {
           latestConfidence = data.confidence ?? null
           setSources({ sources: data.sources ?? [], confidence: data.confidence ?? null })

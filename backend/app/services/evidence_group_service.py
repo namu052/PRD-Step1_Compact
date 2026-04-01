@@ -1,3 +1,4 @@
+import asyncio
 import re
 from collections import Counter
 
@@ -24,7 +25,7 @@ TOPIC_TERMS = [
     "창업",
 ]
 
-GROUP_REVIEW_SCHEMA = {
+GROUP_REVIEW_AND_SUMMARY_SCHEMA = {
     "type": "object",
     "properties": {
         "theme": {"type": "string"},
@@ -39,6 +40,31 @@ GROUP_REVIEW_SCHEMA = {
             "type": "array",
             "items": {"type": "string"},
         },
+        "title": {"type": "string"},
+        "issue": {"type": "string"},
+        "conclusion": {"type": "string"},
+        "applicability": {"type": "string"},
+        "exceptions": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "conflicts": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "fact_distinctions": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "practice_notes": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "summary": {"type": "string"},
+        "key_points": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
     },
     "required": [
         "theme",
@@ -47,6 +73,16 @@ GROUP_REVIEW_SCHEMA = {
         "primary_topic",
         "review_notes",
         "representative_source_ids",
+        "title",
+        "issue",
+        "conclusion",
+        "applicability",
+        "exceptions",
+        "conflicts",
+        "fact_distinctions",
+        "practice_notes",
+        "summary",
+        "key_points",
     ],
     "additionalProperties": False,
 }
@@ -106,10 +142,27 @@ class EvidenceGroupService:
         for index, result in enumerate(crawl_results):
             clusters.setdefault(find(index), []).append(result)
 
+        sorted_clusters = [
+            sorted(items, key=lambda item: item.relevance_score, reverse=True)
+            for items in clusters.values()
+        ]
+        reviews = await asyncio.gather(
+            *(self._review_cluster(question, items) for items in sorted_clusters)
+        )
+
         groups = []
-        for group_index, items in enumerate(clusters.values(), start=1):
-            items = sorted(items, key=lambda item: item.relevance_score, reverse=True)
-            cluster_review = await self._review_cluster(question, items)
+        for group_index, (items, cluster_review) in enumerate(
+            zip(sorted_clusters, reviews), start=1,
+        ):
+            summary_fields = {
+                k: cluster_review[k]
+                for k in (
+                    "title", "issue", "conclusion", "applicability",
+                    "exceptions", "conflicts", "fact_distinctions",
+                    "practice_notes", "summary", "key_points",
+                )
+                if k in cluster_review
+            }
             groups.append(
                 EvidenceGroup(
                     group_id=f"group_{group_index:03d}",
@@ -124,6 +177,7 @@ class EvidenceGroupService:
                     primary_topic=cluster_review["primary_topic"],
                     source_types=sorted({item.type for item in items}),
                     review_notes=cluster_review["review_notes"][:4],
+                    precomputed_summary=summary_fields if summary_fields else None,
                 )
             )
         return groups
@@ -210,18 +264,25 @@ class EvidenceGroupService:
         try:
             payload, _ = await openai_service.create_json(
                 model=settings.openai_verification_model,
-                system_prompt="너는 지방세 근거 문서 군집 검토자이다. 같은 쟁점으로 묶인 문서의 대표 주제와 주의점을 JSON으로 정리하라.",
+                system_prompt=(
+                    "너는 지방세 근거 문서 군집 검토 및 요약 전문가이다. "
+                    "같은 쟁점으로 묶인 문서를 검토하고, 대표 주제·주의점과 함께 "
+                    "쟁점·결론·적용범위·예외·충돌·사실관계 차이·실무 주의사항·핵심 근거를 JSON으로 정리하라."
+                ),
                 user_prompt=(
                     f"질문: {question}\n\n"
                     f"가설 주제: {theme}\n"
                     f"가설 근거: {rationale}\n\n"
                     f"[후보 문서]\n{cluster_documents}\n\n"
-                    "문서들이 같은 쟁점으로 묶여도 되는지 검토하고, 대표 주제와 주의점을 정리하라."
+                    "1) 문서들이 같은 쟁점으로 묶여도 되는지 검토하고 대표 주제와 주의점을 정리하라.\n"
+                    "2) 묶인 문서를 종합하여 쟁점(issue), 공통 결론(conclusion), 적용 범위(applicability), "
+                    "예외(exceptions), 해석 충돌(conflicts), 사실관계 차이(fact_distinctions), "
+                    "실무 주의사항(practice_notes), 요약(summary), 핵심 근거(key_points)를 정리하라."
                 ),
-                schema_name="evidence_group_review",
-                schema=GROUP_REVIEW_SCHEMA,
+                schema_name="evidence_group_review_and_summary",
+                schema=GROUP_REVIEW_AND_SUMMARY_SCHEMA,
                 temperature=0.0,
-                max_tokens=700,
+                max_tokens=1200,
             )
         except Exception:
             return default_payload
