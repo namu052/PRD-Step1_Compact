@@ -19,6 +19,15 @@ class Settings(BaseSettings):
     olta_max_detail_fetch: int = 20
     olta_bbs_max_pages_per_board: int = 2
     olta_bbs_concurrency: int = 3
+    olta_bbs_enabled: bool = True
+    olta_bbs_debug: bool = False
+    olta_bbs_mode: str = "discovery"
+    olta_bbs_dump_dir: str = "debug/bbs"
+    olta_bbs_popup_wait_timeout_ms: int = 2500
+    olta_bbs_same_tab_wait_timeout_ms: int = 2500
+    olta_bbs_detail_ready_timeout_ms: int = 3000
+    olta_bbs_restore_timeout_ms: int = 5000
+    olta_shared_user_data_dir: str = "backend/.playwright/olta-shared-profile"
     answer_context_top_k: int = 40
     verification_target_confidence: float = 0.8
     max_verification_rounds: int = 5
@@ -119,5 +128,93 @@ OLTA_SELECTORS = {
         "search_input": "input#query",
         "search_button": "a.search_icon",
         "result_title_links": "p.tt > a[onclick*='AddViewDocument']",
+    },
+    "bbs": {
+        "entry_url": "/search/PU_0003_search.jsp",
+        "search_input": "input#queryPu",
+        "search_button_js": "doSearchPu()",
+        "result_container_selectors": [
+            ".search_list",
+            ".result_list",
+            ".board_list",
+            ".contents",
+            "#content",
+            "body",
+        ],
+        "board_trigger_selectors": [
+            "select[name*='brd']",
+            "select[id*='brd']",
+            "select[name*='board']",
+            "select[id*='board']",
+            "input[type='radio'][name*='brd']",
+            "input[type='radio'][name*='board']",
+            "[onclick*='doBrdNmCollection']",
+        ],
+        "result_link_selectors": [
+            "a[onclick*='bbsPopUp']",
+            "a[onclick*='Bbs']",
+            "a[href*='bbsId=']",
+            "a[href*='nttId=']",
+            "p.tt > a[onclick]",
+            "li a[onclick]",
+        ],
+        "result_title_link_selectors": [
+            "p.tt > a",
+            "dt a",
+            "td a",
+            "li a",
+            "a[onclick]",
+            "a[href]",
+        ],
+        "result_row_selectors": [
+            "ul li",
+            "ol li",
+            ".search_list li",
+            ".result_list li",
+            ".board_list li",
+            "table tbody tr",
+        ],
+        "empty_state_selectors": [
+            ".no_data",
+            ".empty",
+            ".nodata",
+        ],
+        "detail_content_selectors": [
+            ".board_view",
+            ".view_cont",
+            ".detail_cont",
+            ".bbs_view",
+            ".contents",
+            "#content",
+            "body",
+        ],
+        "detail_ready_selectors": [
+            ".board_view",
+            ".view_cont",
+            ".detail_cont",
+            ".bbs_view",
+            ".board_detail",
+            ".board_cont",
+            ".contents",
+            "#content",
+        ],
+        "modal_selectors": [
+            ".modal.show",
+            ".popup.show",
+            ".layer_popup",
+            ".ui-dialog",
+        ],
+        "iframe_selectors": [
+            "iframe[name*='bbs']",
+            "iframe[id*='bbs']",
+            "iframe[src*='bbsId=']",
+            "iframe[src*='nttId=']",
+        ],
+        "page_ready_selectors": [
+            "input#queryPu",
+            ".search_list",
+            ".result_list",
+            ".board_list",
+        ],
     },
 }
