@@ -12,7 +12,9 @@ export default function ChatInput() {
   const [text, setText] = useState('')
   const textareaRef = useRef(null)
 
-  const disabled = isStreaming || isInitializing || !sessionId
+  const oltaLoggedIn = useAuthStore((state) => state.oltaLoggedIn)
+
+  const disabled = isStreaming || isInitializing || !sessionId || !oltaLoggedIn
 
   useEffect(() => {
     if (!textareaRef.current) {

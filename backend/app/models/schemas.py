@@ -98,6 +98,21 @@ class SourceDetail(BaseModel):
     crawled_at: Optional[datetime] = None
 
 
+class BoardCollectionStat(BaseModel):
+    board_name: str
+    sub_board_name: Optional[str] = None
+    collected_count: int = 0
+    skipped: bool = False
+    status: str = "pending"
+
+
+class CollectionProgress(BaseModel):
+    total_collected: int = 0
+    boards: list[BoardCollectionStat] = Field(default_factory=list)
+    current_board: Optional[str] = None
+    current_sub_board: Optional[str] = None
+
+
 class CrawlResult(BaseModel):
     id: str
     title: str

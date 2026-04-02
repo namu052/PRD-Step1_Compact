@@ -14,7 +14,9 @@ from app.core.event_emitter import sse_event
 from app.core.session_manager import session_manager
 from app.models.evidence import EvidenceSlot
 from app.models.schemas import (
+    BoardCollectionStat,
     ChatRequest,
+    CollectionProgress,
     CrawlResult,
     SourceDetail,
     VerificationHistory,
@@ -96,6 +98,97 @@ def dedupe_source_cards(cards: list[dict]) -> list[dict]:
     return deduped
 
 
+def _build_collection_progress(stats: list[BoardCollectionStat]) -> CollectionProgress:
+    board_map: dict[str, BoardCollectionStat] = {}
+
+    for stat in stats:
+        key = f"{stat.board_name}::{stat.sub_board_name or ''}"
+        board_map[key] = stat
+
+    boards = list(board_map.values())
+    collecting_entries = [board for board in boards if board.status == "collecting"]
+
+    return CollectionProgress(
+        total_collected=sum(board.collected_count for board in boards if board.status == "done"),
+        boards=boards,
+        current_board=collecting_entries[-1].board_name if collecting_entries else None,
+        current_sub_board=collecting_entries[-1].sub_board_name if collecting_entries else None,
+    )
+
+
+def _build_crawl_summary(stats: list[BoardCollectionStat]) -> dict:
+    progress = _build_collection_progress(stats)
+    board_map: dict[str, dict] = {}
+
+    for stat in progress.boards:
+        board = board_map.setdefault(
+            stat.board_name,
+            {
+                "board_name": stat.board_name,
+                "total_collected": 0,
+                "sub_boards": [],
+            },
+        )
+
+        if stat.status == "done":
+            board["total_collected"] += stat.collected_count
+
+        if stat.sub_board_name:
+            board["sub_boards"].append(
+                {
+                    "name": stat.sub_board_name,
+                    "collected_count": stat.collected_count,
+                    "skipped": stat.skipped,
+                    "status": stat.status,
+                }
+            )
+
+    boards = list(board_map.values())
+    return {
+        "grand_total": sum(board["total_collected"] for board in boards),
+        "boards": boards,
+    }
+
+
+def _build_crawl_summary_notice(crawl_summary: dict) -> str | None:
+    board_parts = [
+        f"{board['board_name']}({board['total_collected']}건)"
+        for board in crawl_summary.get("boards", [])
+        if board.get("total_collected", 0) > 0
+    ]
+    if not board_parts:
+        return None
+    return f"게시판별: {', '.join(board_parts)}"
+
+
+def _build_crawl_summary_notice(crawl_summary: dict) -> str | None:
+    board_parts = [
+        f"{board['board_name']}({board['total_collected']})"
+        for board in crawl_summary.get("boards", [])
+        if board.get("total_collected", 0) > 0
+    ]
+    if not board_parts:
+        return None
+    return f"Board totals: {', '.join(board_parts)}"
+
+
+async def _search_with_optional_progress(session, queries, categories, on_progress=None):
+    if on_progress is None:
+        return await crawler_service.search(session, queries, categories)
+
+    try:
+        return await crawler_service.search(
+            session,
+            queries,
+            categories,
+            on_progress=on_progress,
+        )
+    except TypeError as exc:
+        if "on_progress" not in str(exc):
+            raise
+        return await crawler_service.search(session, queries, categories)
+
+
 @router.post("/chat")
 async def chat(payload: ChatRequest):
     session = await require_session(payload.session_id)
@@ -119,6 +212,15 @@ async def chat(payload: ChatRequest):
         # --- OLTA 브랜치 (백그라운드) ---
         olta_result_holder: dict = {}
         olta_notices: list[str] = []
+        crawl_progress_stats: list[BoardCollectionStat] = []
+        olta_event_queue: asyncio.Queue[str] = asyncio.Queue()
+
+        async def queue_olta_event(event: str) -> None:
+            await olta_event_queue.put(event)
+
+        async def on_crawl_progress(stat: BoardCollectionStat) -> None:
+            crawl_progress_stats.append(stat)
+            await queue_olta_event(sse_event("crawl_progress", stat.model_dump()))
 
         async def olta_branch():
             try:
@@ -135,10 +237,11 @@ async def chat(payload: ChatRequest):
                 }))
                 olta_notices.append(stage_notice("OLTA 미로그인 - 기존 법령/판례 자료만 수집합니다."))
 
-            crawl_results = await crawler_service.search(
+            crawl_results = await _search_with_optional_progress(
                 session,
                 search_plan.keywords,
                 search_plan.categories,
+                on_progress=on_crawl_progress,
             )
             ranked_results = await embedding_service.rank_results(
                 payload.question,
@@ -187,6 +290,8 @@ async def chat(payload: ChatRequest):
         )
 
         while True:
+            while not olta_event_queue.empty():
+                yield await olta_event_queue.get()
             if draft_task.done() and draft_queue.empty():
                 break
             try:
@@ -198,6 +303,11 @@ async def chat(payload: ChatRequest):
         yield stage_notice("초안 작성 완료: 웹 검색 결과를 기반으로 1차 답변 초안을 만들었습니다.")
 
         # --- OLTA 브랜치 완료 대기 ---
+        while not olta_task.done() or not olta_event_queue.empty():
+            while not olta_event_queue.empty():
+                yield await olta_event_queue.get()
+            if not olta_task.done():
+                await asyncio.sleep(0.1)
         await olta_task
         for notice in olta_notices:
             yield notice
@@ -411,6 +521,12 @@ async def chat(payload: ChatRequest):
                 if verification_result and sources
                 else None
             )
+
+        crawl_summary = _build_crawl_summary(crawl_progress_stats)
+        yield sse_event("crawl_summary", crawl_summary)
+        crawl_summary_notice = _build_crawl_summary_notice(crawl_summary)
+        if crawl_summary_notice:
+            yield stage_notice(crawl_summary_notice)
 
         yield sse_event("sources", {"sources": sources, "confidence": confidence})
         yield sse_event("stage_change", {"stage": "done"})

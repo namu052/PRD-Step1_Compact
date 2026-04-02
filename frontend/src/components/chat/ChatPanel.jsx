@@ -2,17 +2,22 @@ import { useRef, useEffect } from 'react'
 import { useChatStore } from '../../stores/chatStore'
 import ChatMessage from './ChatMessage'
 import ChatInput from './ChatInput'
+import CrawlProgressBar from './CrawlProgressBar'
 
 export default function ChatPanel() {
   const messages = useChatStore((s) => s.messages)
+  const progressSignature = useChatStore(
+    (s) => `${s.crawlProgress.totalCollected}:${s.crawlProgress.boards.length}:${s.crawlProgress.currentBoard || ''}:${s.crawlProgress.currentSubBoard || ''}`,
+  )
   const bottomRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, progressSignature])
 
   return (
     <div className="flex flex-col h-full">
+      <CrawlProgressBar />
       <div className="flex-1 overflow-y-auto p-4 space-y-1">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm">

@@ -1,52 +1,52 @@
 import { useEffect } from 'react'
 import AppShell from './components/layout/AppShell'
-import GpkiLoginModal from './components/auth/GpkiLoginModal'
+import OltaLoginGuard from './components/auth/OltaLoginGuard'
 import { useAuthStore } from './stores/authStore'
-
-const OLTA_URL = 'https://www.olta.re.kr'
-const OLTA_OPENED_KEY = 'olta-window-opened'
+import { apiUrl } from './lib/api'
 
 function App() {
   const bootstrapSession = useAuthStore((state) => state.bootstrapSession)
-  const isInitializing = useAuthStore((state) => state.isInitializing)
+  const oltaLoggedIn = useAuthStore((state) => state.oltaLoggedIn)
   const sessionId = useAuthStore((state) => state.sessionId)
+  const checkOltaLogin = useAuthStore((state) => state.checkOltaLogin)
 
+  // 1) APP 시작 시 OLTA 로그인 상태 확인 (백엔드 Playwright 브라우저가 OLTA를 연다)
   useEffect(() => {
-    if (sessionStorage.getItem(OLTA_OPENED_KEY) === 'true') {
+    void checkOltaLogin()
+  }, [checkOltaLogin])
+
+  // 2) OLTA 로그인 확인되면 자동으로 세션 부트스트랩
+  useEffect(() => {
+    if (oltaLoggedIn && !sessionId) {
       void bootstrapSession()
-      return
     }
+  }, [oltaLoggedIn, sessionId, bootstrapSession])
 
-    sessionStorage.setItem(OLTA_OPENED_KEY, 'true')
-    window.open(OLTA_URL, '_blank', 'noopener,noreferrer')
-    void bootstrapSession()
-  }, [bootstrapSession])
-
+  // 3) 탭 닫기 시 로그아웃
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const { sessionId: currentSessionId } = useAuthStore.getState()
-      if (!currentSessionId) {
-        return
+      const { sessionId: sid } = useAuthStore.getState()
+      if (sid) {
+        navigator.sendBeacon(
+          apiUrl('/api/auth/logout'),
+          new Blob(
+            [JSON.stringify({ session_id: sid })],
+            { type: 'application/json' },
+          ),
+        )
       }
-
-      navigator.sendBeacon(
-        '/api/auth/logout',
-        new Blob([JSON.stringify({ session_id: currentSessionId })], {
-          type: 'application/json',
-        }),
-      )
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
-  return (
-    <>
-      <AppShell />
-      {!sessionId && !isInitializing && <GpkiLoginModal />}
-    </>
-  )
+  // OLTA 미로그인 상태면 로그인 안내 화면 표시
+  if (!oltaLoggedIn) {
+    return <OltaLoginGuard />
+  }
+
+  return <AppShell />
 }
 
 export default App

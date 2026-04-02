@@ -1,0 +1,458 @@
+{
+  "select_elements": [
+    {
+      "name": "",
+      "id": "searchTypeSelPu",
+      "className": "sel",
+      "parent_html": "<div class=\"sc_bar\">\n\t\t\t\t\t<img class=\"tip_icon\" src=\"/_img/cont/select_arrs.png\" alt=\"자동완성\">\t\t\t\t\t\n\t\t\t\t\t<!-- 자동완성 관련된 부분//기능추가 확정되면 넣어주세요 우선 보류된 사항 -->\n\t\t\t\t\t<!--<div class=\"tip_word2 tip1\">자동완성접기</div>\t\t\t\t\t\n\t\t\t\t\t<div class=\"auto_complete\">\n\t\t\t\t\t\t<p class=\"auto_txt\">현재 검색어 <span>자동 추천 기능</span>을 사용하고 있습니다. <br/>검색어 입력시 자동으로 관련어를 추천합니다.</p>\n\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t<li><span>자동</span> 면직</li>\n\t\t\t\t\t\t\t<li><span>자동</span>차 운수 사업 관계 법</li>\n\t\t\t\t\t\t\t<li><span>자동</span>차 운송 사업자</li>\n\t\t\t\t\t\t\t<li><span>자동</span>차 등록",
+      "options": [
+        {
+          "text": "통합검색",
+          "value": "1",
+          "selected": true
+        },
+        {
+          "text": "문서번호",
+          "value": "2",
+          "selected": false
+        }
+      ]
+    },
+    {
+      "name": "",
+      "id": "sortingData",
+      "className": "",
+      "parent_html": "<p class=\"sel\">\n\t\t\t\t\t<select id=\"sortingData\" onchange=\"javascript:doSorting();\">\n\t\t\t\t\t\t<option selected=\"selected\" value=\"RANK\">정확도순</option>\n\t\t\t\t\t\t<option value=\"DATE\">최근날짜순</option>\n\t\t\t\t\t</select>\n\t\t\t\t</p>",
+      "options": [
+        {
+          "text": "정확도순",
+          "value": "RANK",
+          "selected": true
+        },
+        {
+          "text": "최근날짜순",
+          "value": "DATE",
+          "selected": false
+        }
+      ]
+    }
+  ],
+  "radio_elements": [
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "ALL",
+      "id": "r1",
+      "checked": true,
+      "label_text": "전체",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "screen",
+      "id": "r2",
+      "checked": false,
+      "label_text": "심판결정례",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "evaluation",
+      "id": "r3",
+      "checked": false,
+      "label_text": "심사결정례",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "sentencing",
+      "id": "r4",
+      "checked": false,
+      "label_text": "법원판례",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "sentencing_supreme",
+      "id": "r5",
+      "checked": false,
+      "label_text": "대법원판례",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "sentencing_lower",
+      "id": "r6",
+      "checked": false,
+      "label_text": "하급심판례",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "ordinance",
+      "id": "r7",
+      "checked": false,
+      "label_text": "헌재결정례",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "legal",
+      "id": "r8",
+      "checked": false,
+      "label_text": "법제처해석",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "authoritative",
+      "id": "r9",
+      "checked": false,
+      "label_text": "유권해석",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "radio",
+      "name": "rd_detail_search_type",
+      "value": "bbs",
+      "id": "r10",
+      "checked": false,
+      "label_text": "기타",
+      "parent_tag": "P",
+      "parent_class": "andor",
+      "parent_html": "<p class=\"andor\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r1\" value=\"ALL\" checked=\"checked\"><label for=\"r1\"><span></span>전체</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r2\" value=\"screen\"><label for=\"r2\"><span></span>심판결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r3\" value=\"evaluation\"><label for=\"r3\"><span></span>심사결정례</label>\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"rd_detail_search_type\" id=\"r4\" value=\"sentencing\"><label for=\"r"
+    },
+    {
+      "type": "checkbox",
+      "name": "",
+      "value": "on",
+      "id": "taxCheckboxAll",
+      "checked": false,
+      "label_text": "전체",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "11100",
+      "id": "i2",
+      "checked": false,
+      "label_text": "취득세",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "11200",
+      "id": "i3",
+      "checked": false,
+      "label_text": "등록면허세",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "22000",
+      "id": "i4",
+      "checked": false,
+      "label_text": "주민세",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "23000",
+      "id": "i5",
+      "checked": false,
+      "label_text": "지방소득세",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "24000",
+      "id": "i6",
+      "checked": false,
+      "label_text": "재산세",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "25000",
+      "id": "i7",
+      "checked": false,
+      "label_text": "자동차세",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    },
+    {
+      "type": "checkbox",
+      "name": "ch_deatail_search_taxlist",
+      "value": "30000",
+      "id": "i8",
+      "checked": false,
+      "label_text": "기타",
+      "parent_tag": "TD",
+      "parent_class": "sc_cont check_item",
+      "parent_html": "<td class=\"sc_cont check_item\">\n\t\t\t\t\t\t\t<input class=\"checkbox\" type=\"checkbox\" id=\"taxCheckboxAll\"><label for=\"taxCheckboxAll\">전체</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i2\" value=\"11100\"><label for=\"i2\">취득세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_search_taxlist\" id=\"i3\" value=\"11200\"><label for=\"i3\">등록면허세</label>\n\t\t\t\t\t\t\t<input class=\"checkbox cSchTaxlist\" type=\"checkbox\" name=\"ch_deatail_"
+    }
+  ],
+  "checkbox_elements": [],
+  "onclick_doBrdNm": [
+    {
+      "tag": "TD",
+      "text": "76,265",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">합계</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection(null,'ordinance')\">214</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxColle"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">취득</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('11100','ordinance')\">92</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxCol"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">등면</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('11200','ordinance')\">7</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxColl"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">주민</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('22000','ordinance')\">3</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxColl"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">지소</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('23000','ordinance')\">5</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxColl"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">재산</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('24000','ordinance')\">44</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxCol"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">자동</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('25000','ordinance')\">8</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxColl"
+    },
+    {
+      "tag": "TD",
+      "text": "-",
+      "onclick": "javascript:doBrdNmCollection('','bbs')",
+      "class": "",
+      "parent_html": "<tr><th class=\"tbline\">기타</th><td style=\"cursor:pointer\" onclick=\"javascript:doTaxCollection('30000','ordinance')\">55</td><td style=\"padding:0;\">\t<table style=\"width:100%\">\t\t<colgroup><col width=\"50%\"><col width=\"50%\"></colgroup>\t\t<tbody><tr>\t\t\t<td style=\"cursor:pointer\" onclick=\"javascript:doTaxCol"
+    }
+  ],
+  "all_forms": [
+    {
+      "action": "https://www.olta.re.kr/search/PU_0003_search.jsp",
+      "method": "post",
+      "id": "searchTop",
+      "name": "searchTop",
+      "input_count": 3,
+      "inputs": [
+        {
+          "tag": "INPUT",
+          "name": "csrfToken",
+          "type": "hidden",
+          "value": "null"
+        },
+        {
+          "tag": "INPUT",
+          "name": "query",
+          "type": "hidden",
+          "value": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "querySub",
+          "type": "text",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "action": "https://www.olta.re.kr/search/PU_0003_search.jsp",
+      "method": "post",
+      "id": "search",
+      "name": "search",
+      "input_count": 13,
+      "inputs": [
+        {
+          "tag": "INPUT",
+          "name": "searchType",
+          "type": "hidden",
+          "value": "1"
+        },
+        {
+          "tag": "INPUT",
+          "name": "detailSearchIsOnOff",
+          "type": "hidden",
+          "value": "off"
+        },
+        {
+          "tag": "INPUT",
+          "name": "query",
+          "type": "hidden",
+          "value": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "startCount",
+          "type": "hidden",
+          "value": "0"
+        },
+        {
+          "tag": "INPUT",
+          "name": "sort",
+          "type": "hidden",
+          "value": "RANK"
+        },
+        {
+          "tag": "INPUT",
+          "name": "collection",
+          "type": "hidden",
+          "value": "ALL"
+        },
+        {
+          "tag": "INPUT",
+          "name": "startDate",
+          "type": "hidden",
+          "value": "1970.01.01"
+        },
+        {
+          "tag": "INPUT",
+          "name": "endDate",
+          "type": "hidden",
+          "value": "2026.04.03"
+        },
+        {
+          "tag": "INPUT",
+          "name": "searchField",
+          "type": "hidden",
+          "value": "ALL"
+        },
+        {
+          "tag": "INPUT",
+          "name": "reQuery",
+          "type": "hidden",
+          "value": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "taxTitleStr",
+          "type": "hidden",
+          "value": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "range",
+          "type": "hidden",
+          "value": "ALL"
+        },
+        {
+          "tag": "INPUT",
+          "name": "brdNm",
+          "type": "hidden",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "action": "https://www.olta.re.kr/search/PU_0003_search.jsp#",
+      "method": "post",
+      "id": "",
+      "name": "search_resarch",
+      "input_count": 0,
+      "inputs": []
+    },
+    {
+      "action": "https://www.olta.re.kr/search/PU_0003_search.jsp#",
+      "method": "post",
+      "id": "",
+      "name": "search_detail",
+      "input_count": 0,
+      "inputs": []
+    },
+    {
+      "action": "https://www.olta.re.kr/search/PU_0003_search.jsp#",
+      "method": "get",
+      "id": "",
+      "name": "recentDocument",
+      "input_count": 3,
+      "inputs": [
+        {
+          "tag": "INPUT",
+          "name": "title",
+          "type": "hidden",
+          "value": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "scriptFunc",
+          "type": "hidden",
+          "value": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "submit",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}

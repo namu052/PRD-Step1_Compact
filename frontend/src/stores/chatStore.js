@@ -1,5 +1,14 @@
 import { create } from 'zustand'
 
+function createEmptyCrawlProgress() {
+  return {
+    totalCollected: 0,
+    boards: [],
+    currentBoard: null,
+    currentSubBoard: null,
+  }
+}
+
 export const useChatStore = create((set, get) => ({
   messages: [],
   currentStage: null,
@@ -10,6 +19,8 @@ export const useChatStore = create((set, get) => ({
   currentConfidence: null,
   hasAskedQuestion: false,
   finalAnswerPopup: null,
+  crawlProgress: createEmptyCrawlProgress(),
+  crawlSummary: null,
 
   beginStream: (question) => {
     const requestId = Date.now()
@@ -36,6 +47,8 @@ export const useChatStore = create((set, get) => ({
       currentSources: [],
       currentConfidence: null,
       hasAskedQuestion: true,
+      crawlProgress: createEmptyCrawlProgress(),
+      crawlSummary: null,
     }))
 
     return aiMessageId
@@ -65,31 +78,56 @@ export const useChatStore = create((set, get) => ({
     })),
 
   setStage: (stage) =>
-    set((state) => {
-      if (stage === 'finalizing') {
-        const alreadyNotified = state.messages.some(
-          (message) =>
-            message.role === 'system' && message.content === '최종 답변을 정리하고 있습니다...',
-        )
+    set((state) => ({
+      currentStage: stage,
+      messages:
+        stage === 'finalizing' && state.activeMessageId
+          ? state.messages.map((message) =>
+              message.id === state.activeMessageId ? { ...message, content: '' } : message,
+            )
+          : state.messages,
+    })),
 
-        return {
-          currentStage: stage,
-          messages: alreadyNotified
-            ? state.messages
-            : [
-                ...state.messages,
-                {
-                  id: `msg_${Date.now()}_system_finalizing`,
-                  role: 'system',
-                  content: '최종 답변을 정리하고 있습니다...',
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-        }
+  updateCrawlProgress: (stat) =>
+    set((state) => {
+      const key = `${stat.board_name}::${stat.sub_board_name || ''}`
+      const boards = [...state.crawlProgress.boards]
+      const nextEntry = {
+        boardName: stat.board_name,
+        subBoardName: stat.sub_board_name ?? null,
+        collectedCount: stat.collected_count ?? 0,
+        skipped: Boolean(stat.skipped),
+        status: stat.status ?? 'pending',
+      }
+      const entryIndex = boards.findIndex(
+        (board) => `${board.boardName}::${board.subBoardName || ''}` === key,
+      )
+
+      if (entryIndex >= 0) {
+        boards[entryIndex] = nextEntry
+      } else {
+        boards.push(nextEntry)
       }
 
-      return { currentStage: stage }
+      const activeEntry = [...boards].reverse().find((board) => board.status === 'collecting') ?? null
+
+      return {
+        crawlProgress: {
+          totalCollected: boards.reduce((sum, board) => sum + (board.collectedCount || 0), 0),
+          boards,
+          currentBoard: activeEntry?.boardName ?? null,
+          currentSubBoard: activeEntry?.subBoardName ?? null,
+        },
+      }
     }),
+
+  resetCrawlProgress: () =>
+    set({
+      crawlProgress: createEmptyCrawlProgress(),
+      crawlSummary: null,
+    }),
+
+  setCrawlSummary: (summary) => set({ crawlSummary: summary ?? null }),
 
   setSources: ({ sources, confidence }) =>
     set({
@@ -136,6 +174,8 @@ export const useChatStore = create((set, get) => ({
         isStreaming: false,
         activeMessageId: null,
         finalAnswerPopup: null,
+        crawlProgress: createEmptyCrawlProgress(),
+        crawlSummary: null,
       }
     })
   },
@@ -153,5 +193,7 @@ export const useChatStore = create((set, get) => ({
       currentConfidence: null,
       hasAskedQuestion: false,
       finalAnswerPopup: null,
+      crawlProgress: createEmptyCrawlProgress(),
+      crawlSummary: null,
     }),
 }))

@@ -31,6 +31,12 @@ frontend/node_modules/
 frontend/dist/
 frontend/dist-ssr/
 
+# Playwright browser profile (large, machine-specific)
+backend/.playwright/
+
+# Debug DOM dump HTML files (large, regeneratable)
+backend/debug/**/*.html
+
 # Logs and temp files
 *.log
 logs/

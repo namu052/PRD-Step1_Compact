@@ -1,26 +1,17 @@
 import { create } from 'zustand'
-
-const loggedOutState = {
-  isLoggedIn: false,
-  userName: null,
-  sessionId: null,
-  loginError: null,
-  isInitializing: false,
-  isLoggingIn: false,
-}
+import { apiUrl } from '../lib/api'
 
 export const useAuthStore = create((set) => ({
   isLoggedIn: false,
   userName: null,
   sessionId: null,
   isInitializing: false,
-  isLoggingIn: false,
   loginError: null,
 
   bootstrapSession: async () => {
     set({ isInitializing: true, loginError: null })
     try {
-      const response = await fetch('/api/auth/gpki', {
+      const response = await fetch(apiUrl('/api/auth/gpki'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cert_id: 'cert_001', password: 'test1234' }),
@@ -29,7 +20,6 @@ export const useAuthStore = create((set) => ({
 
       if (!response.ok || !data.success) {
         set({
-          isLoggedIn: false,
           isInitializing: false,
           loginError: data.error ?? '로그인 중 오류가 발생했습니다.',
         })
@@ -45,49 +35,9 @@ export const useAuthStore = create((set) => ({
       })
     } catch {
       set({
-        isLoggedIn: false,
         isInitializing: false,
         loginError: '세션 초기화 중 오류가 발생했습니다.',
       })
-    }
-  },
-
-  login: async (certId, password) => {
-    set({ isLoggingIn: true, loginError: null })
-
-    try {
-      const response = await fetch('/api/auth/gpki', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cert_id: certId, password }),
-      })
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        set({
-          isLoggedIn: false,
-          isLoggingIn: false,
-          loginError: data.error ?? '로그인 중 오류가 발생했습니다.',
-        })
-        return false
-      }
-
-      set({
-        isLoggedIn: true,
-        userName: data.user_name,
-        sessionId: data.session_id,
-        isInitializing: false,
-        isLoggingIn: false,
-        loginError: null,
-      })
-      return true
-    } catch {
-      set({
-        isLoggedIn: false,
-        isLoggingIn: false,
-        loginError: '로그인 중 오류가 발생했습니다.',
-      })
-      return false
     }
   },
 
@@ -95,7 +45,7 @@ export const useAuthStore = create((set) => ({
     try {
       const { sessionId } = useAuthStore.getState()
       if (sessionId) {
-        await fetch('/api/auth/logout', {
+        await fetch(apiUrl('/api/auth/logout'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: sessionId }),
@@ -105,12 +55,15 @@ export const useAuthStore = create((set) => ({
       // Session reset should still happen locally.
     }
 
-    set(loggedOutState)
+    set({
+      isLoggedIn: false,
+      userName: null,
+      sessionId: null,
+      loginError: null,
+      isInitializing: false,
+      oltaLoggedIn: false,
+    })
   },
-
-  resetSession: () => set(loggedOutState),
-
-  clearError: () => set({ loginError: null }),
 
   // OLTA 로그인 상태 관리
   oltaLoggedIn: false,
@@ -118,11 +71,11 @@ export const useAuthStore = create((set) => ({
   oltaMessage: null,
 
   checkOltaLogin: async () => {
-    set({ oltaChecking: true })
+    set({ oltaChecking: true, oltaMessage: null })
     try {
-      const res = await fetch('/api/auth/olta-status')
+      const res = await fetch(apiUrl('/api/auth/olta-status'))
       const data = await res.json()
-      set({ oltaLoggedIn: data.logged_in, oltaChecking: false, oltaMessage: null })
+      set({ oltaLoggedIn: data.logged_in, oltaChecking: false })
       return data.logged_in
     } catch {
       set({ oltaChecking: false, oltaMessage: 'OLTA 상태 확인 실패' })
@@ -130,26 +83,15 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  openOltaLogin: async () => {
-    set({ oltaChecking: true, oltaMessage: '브라우저에서 OLTA 로그인 페이지를 여는 중...' })
-    try {
-      const res = await fetch('/api/auth/olta-login', { method: 'POST' })
-      const data = await res.json()
-      set({ oltaChecking: false, oltaMessage: data.message })
-    } catch {
-      set({ oltaChecking: false, oltaMessage: 'OLTA 로그인 페이지 열기 실패' })
-    }
-  },
-
   verifyOltaLogin: async () => {
-    set({ oltaChecking: true })
+    set({ oltaChecking: true, oltaMessage: null })
     try {
-      const res = await fetch('/api/auth/olta-verify', { method: 'POST' })
+      const res = await fetch(apiUrl('/api/auth/olta-verify'), { method: 'POST' })
       const data = await res.json()
       set({
         oltaLoggedIn: data.success,
         oltaChecking: false,
-        oltaMessage: data.message,
+        oltaMessage: data.success ? null : data.message,
       })
       return data.success
     } catch {

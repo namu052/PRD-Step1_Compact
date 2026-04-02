@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useChatStore } from '../../stores/chatStore'
 import { useAuthStore } from '../../stores/authStore'
+import { apiUrl } from '../../lib/api'
+import CrawlSummaryCard from './CrawlSummaryCard'
 import SourceCard from './SourceCard'
 import SourceDetail from './SourceDetail'
 
@@ -20,6 +22,7 @@ export default function PreviewPanel() {
   const selectedSourceId = useChatStore((state) => state.selectedSourceId)
   const isStreaming = useChatStore((state) => state.isStreaming)
   const hasAskedQuestion = useChatStore((state) => state.hasAskedQuestion)
+  const crawlSummary = useChatStore((state) => state.crawlSummary)
   const sessionId = useAuthStore((state) => state.sessionId)
   const [selectedSourceDetail, setSelectedSourceDetail] = useState(null)
   const [detailError, setDetailError] = useState(null)
@@ -43,13 +46,10 @@ export default function PreviewPanel() {
 
       try {
         const response = await fetch(
-          `/api/preview/${encodeURIComponent(selectedSourceId)}?session_id=${encodeURIComponent(sessionId)}`,
+          apiUrl(
+            `/api/preview/${encodeURIComponent(selectedSourceId)}?session_id=${encodeURIComponent(sessionId)}`,
+          ),
         )
-        if (response.status === 401) {
-          useAuthStore.getState().resetSession()
-          throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.')
-        }
-
         if (!response.ok) {
           throw new Error('출처 상세 정보를 불러오지 못했습니다.')
         }
@@ -96,6 +96,12 @@ export default function PreviewPanel() {
   return (
     <div className="h-full overflow-y-auto bg-gray-50 p-4">
       <h2 className="mb-4 text-base font-semibold text-gray-700">출처 및 관련 문서</h2>
+
+      {crawlSummary && (
+        <div className="mb-4">
+          <CrawlSummaryCard summary={crawlSummary} />
+        </div>
+      )}
 
       {showEmptyHint && (
         <div className="flex h-48 items-center justify-center text-center text-sm text-gray-400">

@@ -1,0 +1,1415 @@
+[
+  {
+    "index": 0,
+    "text": "",
+    "href": "/main.do",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.header_box > H1. > A",
+    "outer_html": "<a href=\"/main.do\"><img src=\"/_img/comn/logo_t.jpg\" alt=\"KILF 지방세 법령정보시스템\"></a>"
+  },
+  {
+    "index": 1,
+    "text": "검색",
+    "href": "javascript:;",
+    "onclick": "javascript:doSearchSub();",
+    "target": "",
+    "tag_path": "TR. > TD. > A",
+    "outer_html": "<a href=\"javascript:;\" onclick=\"javascript:doSearchSub();\" class=\"search_icon\">검색</a>"
+  },
+  {
+    "index": 2,
+    "text": "검색안내",
+    "href": "#",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TR. > TD. > A",
+    "outer_html": "<a href=\"#\" class=\"search_guide_sub\">검색안내</a>"
+  },
+  {
+    "index": 3,
+    "text": "",
+    "href": "#",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.layer_pop_wrap_sub search_info > DIV.winpop_top02_sub > A",
+    "outer_html": "<a class=\"close\" href=\"#\" style=\"display: inline-block;\n    float: right;\n    padding-top: 1px;\"><img src=\"https://www.olta.re.kr/_img/cont/layer_close_btn.png\" alt=\"닫기\"></a>"
+  },
+  {
+    "index": 4,
+    "text": "0",
+    "href": "#",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.alarm_box > P.alarm > A",
+    "outer_html": "<a href=\"#\">\n\t\t\t\t\t\t\t<span id=\"alarmCnt\">0</span>\n\t\t\t\t\t\t</a>"
+  },
+  {
+    "index": 5,
+    "text": "로그아웃",
+    "href": "/uat/uia/actionLogout.do",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.header_box > P.gnb_r > A",
+    "outer_html": "<a class=\"logout\" href=\"/uat/uia/actionLogout.do\">로그아웃</a>"
+  },
+  {
+    "index": 6,
+    "text": "마이페이지",
+    "href": "/mypage/memberManage.do?upperMenuId=14000000&menuNo=14500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.header_box > P.gnb_r > A",
+    "outer_html": "<a class=\"my\" href=\"/mypage/memberManage.do?upperMenuId=14000000&amp;menuNo=14500000\">마이페이지</a>"
+  },
+  {
+    "index": 8,
+    "text": "법령정보",
+    "href": "/ordinance/importantList.do?menuNo=8010000&upperMenuId=8000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI. > A",
+    "outer_html": "<a href=\"/ordinance/importantList.do?menuNo=8010000&amp;upperMenuId=8000000\" class=\"\">법령정보</a>"
+  },
+  {
+    "index": 9,
+    "text": "지방세 관계 법령",
+    "href": "/ordinance/importantList.do?menuNo=80100100&upperMenuId=8010000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/ordinance/importantList.do?menuNo=80100100&amp;upperMenuId=8010000\">지방세 관계 법령</a>"
+  },
+  {
+    "index": 10,
+    "text": "지방자치단체 조례",
+    "href": "/ordinance/rulesListAPI.do?menuNo=8020000&upperMenuId=8000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/ordinance/rulesListAPI.do?menuNo=8020000&amp;upperMenuId=8000000\">지방자치단체 조례</a>"
+  },
+  {
+    "index": 11,
+    "text": "최신 개정법령",
+    "href": "/ordinance/theLastestList.do?menuNo=8030000&upperMenuId=8000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/ordinance/theLastestList.do?menuNo=8030000&amp;upperMenuId=8000000\">최신 개정법령</a>"
+  },
+  {
+    "index": 12,
+    "text": "판례와 해석",
+    "href": "/explainInfo/constitutionDcnList.do?menuNo=9060000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/constitutionDcnList.do?menuNo=9060000&amp;upperMenuId=9000000\" class=\"\">판례와 해석</a>"
+  },
+  {
+    "index": 13,
+    "text": "헌법재판소 결정례",
+    "href": "/explainInfo/constitutionDcnList.do?menuNo=9060000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/constitutionDcnList.do?menuNo=9060000&amp;upperMenuId=9000000\">헌법재판소 결정례</a>"
+  },
+  {
+    "index": 14,
+    "text": "법원 판례",
+    "href": "/explainInfo/decisionList.do?menuNo=90010100&upperMenuId=90010000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/decisionList.do?menuNo=90010100&amp;upperMenuId=90010000\">법원 판례</a>"
+  },
+  {
+    "index": 15,
+    "text": "법제처 유권해석",
+    "href": "/explainInfo/lawInterpretationList.do?menuNo=9030000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/lawInterpretationList.do?menuNo=9030000&amp;upperMenuId=9000000\">법제처 유권해석</a>"
+  },
+  {
+    "index": 16,
+    "text": "조세심판원 심판결정례",
+    "href": "/explainInfo/judgeDecisionList.do?menuNo=9040000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/judgeDecisionList.do?menuNo=9040000&amp;upperMenuId=9000000\">조세심판원 심판결정례</a>"
+  },
+  {
+    "index": 17,
+    "text": "감사원 심사결정례",
+    "href": "/explainInfo/dlbDcnList.do?menuNo=9050000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/dlbDcnList.do?menuNo=9050000&amp;upperMenuId=9000000\">감사원 심사결정례</a>"
+  },
+  {
+    "index": 18,
+    "text": "행정안전부 유권해석",
+    "href": "/explainInfo/authoInterpretationList.do?menuNo=9020000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/explainInfo/authoInterpretationList.do?menuNo=9020000&amp;upperMenuId=9000000\">행정안전부 유권해석</a>"
+  },
+  {
+    "index": 19,
+    "text": "자료마당",
+    "href": "/ebook/catalist.do?Dir=0600000000&menuNo=12050500&upperMenuId=12050000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI. > A",
+    "outer_html": "<a href=\"/ebook/catalist.do?Dir=0600000000&amp;menuNo=12050500&amp;upperMenuId=12050000\" class=\"\">자료마당</a>"
+  },
+  {
+    "index": 20,
+    "text": "전자도서관(E-Book)",
+    "href": "/ebook/catalist.do?Dir=0600000000&menuNo=12050500&upperMenuId=12050000&menuNo=12050100&upperMenuId=12050000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/ebook/catalist.do?Dir=0600000000&amp;menuNo=12050500&amp;upperMenuId=12050000&amp;menuNo=12050100&amp;upperMenuId=12050000\">전자도서관(E-Book)</a>"
+  },
+  {
+    "index": 21,
+    "text": "시가표준액",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000214&menuNo=12090100&upperMenuId=12090000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000214&amp;menuNo=12090100&amp;upperMenuId=12090000\">시가표준액</a>"
+  },
+  {
+    "index": 22,
+    "text": "온라인교육",
+    "href": "/education/selectOnlineEducationList.do?evMenuNo=70100000&menuNo=21110100&upperMenuId=21110000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/education/selectOnlineEducationList.do?evMenuNo=70100000&amp;menuNo=21110100&amp;upperMenuId=21110000\">온라인교육</a>"
+  },
+  {
+    "index": 23,
+    "text": "참고자료",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000261&menuNo=12100000&upperMenuId=12000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000261&amp;menuNo=12100000&amp;upperMenuId=12000000\">참고자료</a>"
+  },
+  {
+    "index": 24,
+    "text": "한국지방세연구원",
+    "href": "https://www.kilf.re.kr/?upperMenuId=8500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI. > A",
+    "outer_html": "<a href=\"https://www.kilf.re.kr/?upperMenuId=8500000\" class=\"\">한국지방세연구원</a>"
+  },
+  {
+    "index": 25,
+    "text": "한국지방세연구원",
+    "href": "https://www.kilf.re.kr/?menuNo=8510000&upperMenuId=8500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"https://www.kilf.re.kr/?menuNo=8510000&amp;upperMenuId=8500000\">한국지방세연구원</a>"
+  },
+  {
+    "index": 26,
+    "text": "공식채널(지튜브)",
+    "href": "https://www.youtube.com/channel/UCCCmppW038WL6aOfky-35lQ?menuNo=8520000&upperMenuId=8500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"https://www.youtube.com/channel/UCCCmppW038WL6aOfky-35lQ?menuNo=8520000&amp;upperMenuId=8500000\">공식채널(지튜브)</a>"
+  },
+  {
+    "index": 27,
+    "text": "알림마당",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000011&menuNo=13010000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000011&amp;menuNo=13010000&amp;upperMenuId=13000000\" class=\"\">알림마당</a>"
+  },
+  {
+    "index": 28,
+    "text": "공지사항",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000011&menuNo=13010000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000011&amp;menuNo=13010000&amp;upperMenuId=13000000\">공지사항</a>"
+  },
+  {
+    "index": 29,
+    "text": "이용안내 Q&A",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000081&menuNo=14600000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000081&amp;menuNo=14600000&amp;upperMenuId=13000000\">이용안내 Q&amp;A</a>"
+  },
+  {
+    "index": 30,
+    "text": "FAQ",
+    "href": "/common/faqView.do?menuNo=13050000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/common/faqView.do?menuNo=13050000&amp;upperMenuId=13000000\">FAQ</a>"
+  },
+  {
+    "index": 31,
+    "text": "쟁송사무",
+    "href": "/cop/bbs/selectBoardArticle.do?nttId=26580&bbsId=BBSMSTR_000000000342&menuNo=21270102&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI.offi > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardArticle.do?nttId=26580&amp;bbsId=BBSMSTR_000000000342&amp;menuNo=21270102&amp;upperMenuId=19100000\" class=\"\">쟁송사무</a>"
+  },
+  {
+    "index": 32,
+    "text": "자문지원 절차 및 안내",
+    "href": "/cop/bbs/selectBoardArticle.do?nttId=26580&bbsId=BBSMSTR_000000000342&menuNo=21270102&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardArticle.do?nttId=26580&amp;bbsId=BBSMSTR_000000000342&amp;menuNo=21270102&amp;upperMenuId=19100000\">자문지원 절차 및 안내</a>"
+  },
+  {
+    "index": 33,
+    "text": "쟁송사무지원 사례집(매년)",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000343&menuNo=21270103&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000343&amp;menuNo=21270103&amp;upperMenuId=19100000\">쟁송사무지원 사례집(매년)</a>"
+  },
+  {
+    "index": 34,
+    "text": "쟁송사무지원 신청사례 알림방(수시)",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000371&menuNo=21270106&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000371&amp;menuNo=21270106&amp;upperMenuId=19100000\">쟁송사무지원 신청사례 알림방(수시)</a>"
+  },
+  {
+    "index": 35,
+    "text": "전국단위사건",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000361&menuNo=21270100&upperMenuId=21270107",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000361&amp;menuNo=21270100&amp;upperMenuId=21270107\">전국단위사건</a>"
+  },
+  {
+    "index": 36,
+    "text": "쟁송사무워크숍 자료",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000362&menuNo=21270105&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000362&amp;menuNo=21270105&amp;upperMenuId=19100000\">쟁송사무워크숍 자료</a>"
+  },
+  {
+    "index": 37,
+    "text": "쟁송사무 소통마당",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000391&menuNo=21270100&upperMenuId=21270109",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000391&amp;menuNo=21270100&amp;upperMenuId=21270109\">쟁송사무 소통마당</a>"
+  },
+  {
+    "index": 38,
+    "text": "공무원마당",
+    "href": "/cop/bbs/selectNoticeSearchList.do?menuNo=21100000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.menu offi > LI.offi > A",
+    "outer_html": "<a href=\"/cop/bbs/selectNoticeSearchList.do?menuNo=21100000&amp;upperMenuId=21000000\" class=\"\">공무원마당</a>"
+  },
+  {
+    "index": 39,
+    "text": "검색",
+    "href": "/cop/bbs/selectNoticeSearchList.do?menuNo=21100000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectNoticeSearchList.do?menuNo=21100000&amp;upperMenuId=21000000\">검색</a>"
+  },
+  {
+    "index": 40,
+    "text": "질의응답",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000151&menuNo=21200100&upperMenuId=21200000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000151&amp;menuNo=21200100&amp;upperMenuId=21200000\">질의응답</a>"
+  },
+  {
+    "index": 41,
+    "text": "지방세 상담",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000181&menuNo=21300000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000181&amp;menuNo=21300000&amp;upperMenuId=21000000\">지방세 상담</a>"
+  },
+  {
+    "index": 42,
+    "text": "실무자료",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000221&menuNo=21500100&upperMenuId=21500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000221&amp;menuNo=21500100&amp;upperMenuId=21500000\">실무자료</a>"
+  },
+  {
+    "index": 43,
+    "text": "자유게시판",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000211&menuNo=21900000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000211&amp;menuNo=21900000&amp;upperMenuId=21000000\">자유게시판</a>"
+  },
+  {
+    "index": 44,
+    "text": "연혁별 개정세법 적용요령",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000421&menuNo=21600000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000421&amp;menuNo=21600000&amp;upperMenuId=21000000\">연혁별 개정세법 적용요령</a>"
+  },
+  {
+    "index": 45,
+    "text": "지방자치단체 소통마당",
+    "href": "/cop/bbs/selectLocalMap.do?bbsId=BBSMSTR_100000000001&menuNo=21150000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.tm_menu > LI. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectLocalMap.do?bbsId=BBSMSTR_100000000001&amp;menuNo=21150000&amp;upperMenuId=21000000\">지방자치단체 소통마당</a>"
+  },
+  {
+    "index": 46,
+    "text": "지방세 관계 법령",
+    "href": "/ordinance/importantList.do?menuNo=80100100&upperMenuId=8010000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/ordinance/importantList.do?menuNo=80100100&amp;upperMenuId=8010000\">지방세 관계 법령</a>"
+  },
+  {
+    "index": 47,
+    "text": "지방자치단체 조례",
+    "href": "/ordinance/rulesListAPI.do?menuNo=8020000&upperMenuId=8000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/ordinance/rulesListAPI.do?menuNo=8020000&amp;upperMenuId=8000000\">지방자치단체 조례</a>"
+  },
+  {
+    "index": 48,
+    "text": "최신 개정법령",
+    "href": "/ordinance/theLastestList.do?menuNo=8030000&upperMenuId=8000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/ordinance/theLastestList.do?menuNo=8030000&amp;upperMenuId=8000000\">최신 개정법령</a>"
+  },
+  {
+    "index": 49,
+    "text": "헌법재판소 결정례",
+    "href": "/explainInfo/constitutionDcnList.do?menuNo=9060000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/explainInfo/constitutionDcnList.do?menuNo=9060000&amp;upperMenuId=9000000\">헌법재판소 결정례</a>"
+  },
+  {
+    "index": 50,
+    "text": "법원 판례",
+    "href": "/explainInfo/decisionList.do?menuNo=90010100&upperMenuId=90010000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/explainInfo/decisionList.do?menuNo=90010100&amp;upperMenuId=90010000\">법원 판례</a>"
+  },
+  {
+    "index": 51,
+    "text": "법제처 유권해석",
+    "href": "/explainInfo/lawInterpretationList.do?menuNo=9030000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/explainInfo/lawInterpretationList.do?menuNo=9030000&amp;upperMenuId=9000000\">법제처 유권해석</a>"
+  },
+  {
+    "index": 52,
+    "text": "조세심판원 심판결정례",
+    "href": "/explainInfo/judgeDecisionList.do?menuNo=9040000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/explainInfo/judgeDecisionList.do?menuNo=9040000&amp;upperMenuId=9000000\">조세심판원 심판결정례</a>"
+  },
+  {
+    "index": 53,
+    "text": "감사원 심사결정례",
+    "href": "/explainInfo/dlbDcnList.do?menuNo=9050000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/explainInfo/dlbDcnList.do?menuNo=9050000&amp;upperMenuId=9000000\">감사원 심사결정례</a>"
+  },
+  {
+    "index": 54,
+    "text": "행정안전부 유권해석",
+    "href": "/explainInfo/authoInterpretationList.do?menuNo=9020000&upperMenuId=9000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/explainInfo/authoInterpretationList.do?menuNo=9020000&amp;upperMenuId=9000000\">행정안전부 유권해석</a>"
+  },
+  {
+    "index": 55,
+    "text": "전자도서관(E-Book)",
+    "href": "/ebook/catalist.do?Dir=0600000000&menuNo=12050500&upperMenuId=12050000&menuNo=12050100&upperMenuId=12050000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/ebook/catalist.do?Dir=0600000000&amp;menuNo=12050500&amp;upperMenuId=12050000&amp;menuNo=12050100&amp;upperMenuId=12050000\">전자도서관(E-Book)</a>"
+  },
+  {
+    "index": 56,
+    "text": "시가표준액",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000214&menuNo=12090100&upperMenuId=12090000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000214&amp;menuNo=12090100&amp;upperMenuId=12090000\">시가표준액</a>"
+  },
+  {
+    "index": 57,
+    "text": "온라인교육",
+    "href": "/education/selectOnlineEducationList.do?evMenuNo=70100000&menuNo=21110100&upperMenuId=21110000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/education/selectOnlineEducationList.do?evMenuNo=70100000&amp;menuNo=21110100&amp;upperMenuId=21110000\">온라인교육</a>"
+  },
+  {
+    "index": 58,
+    "text": "참고자료",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000261&menuNo=12100000&upperMenuId=12000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000261&amp;menuNo=12100000&amp;upperMenuId=12000000\">참고자료</a>"
+  },
+  {
+    "index": 59,
+    "text": "한국지방세연구원",
+    "href": "https://www.kilf.re.kr/?menuNo=8510000&upperMenuId=8500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"https://www.kilf.re.kr/?menuNo=8510000&amp;upperMenuId=8500000\">한국지방세연구원</a>"
+  },
+  {
+    "index": 60,
+    "text": "공식채널(지튜브)",
+    "href": "https://www.youtube.com/channel/UCCCmppW038WL6aOfky-35lQ?menuNo=8520000&upperMenuId=8500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"https://www.youtube.com/channel/UCCCmppW038WL6aOfky-35lQ?menuNo=8520000&amp;upperMenuId=8500000\">공식채널(지튜브)</a>"
+  },
+  {
+    "index": 61,
+    "text": "공지사항",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000011&menuNo=13010000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000011&amp;menuNo=13010000&amp;upperMenuId=13000000\">공지사항</a>"
+  },
+  {
+    "index": 62,
+    "text": "이용안내 Q&A",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000081&menuNo=14600000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000081&amp;menuNo=14600000&amp;upperMenuId=13000000\">이용안내 Q&amp;A</a>"
+  },
+  {
+    "index": 63,
+    "text": "FAQ",
+    "href": "/common/faqView.do?menuNo=13050000&upperMenuId=13000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/common/faqView.do?menuNo=13050000&amp;upperMenuId=13000000\">FAQ</a>"
+  },
+  {
+    "index": 64,
+    "text": "자문지원 절차 및 안내",
+    "href": "/cop/bbs/selectBoardArticle.do?nttId=26580&bbsId=BBSMSTR_000000000342&menuNo=21270102&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardArticle.do?nttId=26580&amp;bbsId=BBSMSTR_000000000342&amp;menuNo=21270102&amp;upperMenuId=19100000\">자문지원 절차 및 안내</a>"
+  },
+  {
+    "index": 65,
+    "text": "쟁송사무지원 사례집(매년)",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000343&menuNo=21270103&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000343&amp;menuNo=21270103&amp;upperMenuId=19100000\">쟁송사무지원 사례집(매년)</a>"
+  },
+  {
+    "index": 66,
+    "text": "쟁송사무지원 신청사례 알림방(수시)",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000371&menuNo=21270106&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000371&amp;menuNo=21270106&amp;upperMenuId=19100000\">쟁송사무지원 신청사례 알림방(수시)</a>"
+  },
+  {
+    "index": 67,
+    "text": "전국단위사건",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000361&menuNo=21270100&upperMenuId=21270107",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000361&amp;menuNo=21270100&amp;upperMenuId=21270107\">전국단위사건</a>"
+  },
+  {
+    "index": 68,
+    "text": "쟁송사무워크숍 자료",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000362&menuNo=21270105&upperMenuId=19100000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000362&amp;menuNo=21270105&amp;upperMenuId=19100000\">쟁송사무워크숍 자료</a>"
+  },
+  {
+    "index": 69,
+    "text": "쟁송사무 소통마당",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000391&menuNo=21270100&upperMenuId=21270109",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000391&amp;menuNo=21270100&amp;upperMenuId=21270109\">쟁송사무 소통마당</a>"
+  },
+  {
+    "index": 70,
+    "text": "검색",
+    "href": "/cop/bbs/selectNoticeSearchList.do?menuNo=21100000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectNoticeSearchList.do?menuNo=21100000&amp;upperMenuId=21000000\">검색</a>"
+  },
+  {
+    "index": 71,
+    "text": "질의응답",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000151&menuNo=21200100&upperMenuId=21200000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000151&amp;menuNo=21200100&amp;upperMenuId=21200000\">질의응답</a>"
+  },
+  {
+    "index": 72,
+    "text": "지방세 상담",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000181&menuNo=21300000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000181&amp;menuNo=21300000&amp;upperMenuId=21000000\">지방세 상담</a>"
+  },
+  {
+    "index": 73,
+    "text": "실무자료",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000221&menuNo=21500100&upperMenuId=21500000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000221&amp;menuNo=21500100&amp;upperMenuId=21500000\">실무자료</a>"
+  },
+  {
+    "index": 74,
+    "text": "자유게시판",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000211&menuNo=21900000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000211&amp;menuNo=21900000&amp;upperMenuId=21000000\">자유게시판</a>"
+  },
+  {
+    "index": 75,
+    "text": "연혁별 개정세법 적용요령",
+    "href": "/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000421&menuNo=21600000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectBoardList.do?bbsId=BBSMSTR_000000000421&amp;menuNo=21600000&amp;upperMenuId=21000000\">연혁별 개정세법 적용요령</a>"
+  },
+  {
+    "index": 76,
+    "text": "지방자치단체 소통마당",
+    "href": "/cop/bbs/selectLocalMap.do?bbsId=BBSMSTR_100000000001&menuNo=21150000&upperMenuId=21000000",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DL. > DD. > A",
+    "outer_html": "<a href=\"/cop/bbs/selectLocalMap.do?bbsId=BBSMSTR_100000000001&amp;menuNo=21150000&amp;upperMenuId=21000000\">지방자치단체 소통마당</a>"
+  },
+  {
+    "index": 77,
+    "text": "내가 본 정보",
+    "href": "#search_tab_1",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.search_basket > LI. > A",
+    "outer_html": "<a href=\"#search_tab_1\" class=\"selected\">내가 본 정보</a>"
+  },
+  {
+    "index": 78,
+    "text": "보관함",
+    "href": "#search_tab_2",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.search_basket > LI. > A",
+    "outer_html": "<a href=\"#search_tab_2\">보관함</a>"
+  },
+  {
+    "index": 79,
+    "text": "선택삭제",
+    "href": "javascript:void(0);",
+    "onclick": "deleteViewDocument();",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_btns > A",
+    "outer_html": "<a class=\"sbv_btn01\" href=\"javascript:void(0);\" onclick=\"deleteViewDocument();\" \"=\"\">선택삭제</a>"
+  },
+  {
+    "index": 80,
+    "text": "전체삭제",
+    "href": "javascript:void(0);",
+    "onclick": "deleteViewDocuments();",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_btns > A",
+    "outer_html": "<a class=\"sbv_btn02\" href=\"javascript:void(0);\" onclick=\"deleteViewDocuments();\" \"=\"\">전체삭제</a>"
+  },
+  {
+    "index": 81,
+    "text": "보관함 추가",
+    "href": "javascript:void(0);",
+    "onclick": "",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_btns > A",
+    "outer_html": "<a class=\"sbv_btn01\" id=\"add_cabinet\" href=\"javascript:void(0);\">보관함 추가</a>"
+  },
+  {
+    "index": 82,
+    "text": "삭제",
+    "href": "javascript:void(0);",
+    "onclick": "",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_btns > A",
+    "outer_html": "<a class=\"sbv_btn02\" id=\"remove_cabinet\" href=\"javascript:void(0);\">삭제</a>"
+  },
+  {
+    "index": 83,
+    "text": "보관함 변경",
+    "href": "javascript:void(0);",
+    "onclick": "",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_btns > A",
+    "outer_html": "<a class=\"sbv_btn03\" id=\"edit_cabinet\" href=\"javascript:void(0);\">보관함 변경</a>"
+  },
+  {
+    "index": 84,
+    "text": "담기",
+    "href": "javascript:void(0);",
+    "onclick": "",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_btns > A",
+    "outer_html": "<a class=\"sbv_btn04\" id=\"push_cabinet\" href=\"javascript:void(0);\">담기<img class=\"tip_icon\" src=\"/_img/comn/sbv_ex.png\" alt=\"도움말보기\"></a>"
+  },
+  {
+    "index": 85,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "AddCabinet();",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_edit make add_cabinet > A",
+    "outer_html": "<a class=\"edit_btn\" href=\"javascript:void(0);\" onclick=\"AddCabinet();\"></a>"
+  },
+  {
+    "index": 86,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_edit make add_cabinet > A",
+    "outer_html": "<a class=\"cancle_btn\" href=\"javascript:void(0);\"></a>"
+  },
+  {
+    "index": 87,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "ChangeCabinet();",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_edit edit_cabinet > A",
+    "outer_html": "<a class=\"edit_btn\" href=\"javascript:void(0);\" onclick=\"ChangeCabinet();\"></a>"
+  },
+  {
+    "index": 88,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "",
+    "target": "",
+    "tag_path": "LI. > DIV.sbv_edit edit_cabinet > A",
+    "outer_html": "<a class=\"cancle_btn\" href=\"javascript:void(0);\"></a>"
+  },
+  {
+    "index": 89,
+    "text": "",
+    "href": "/index.jsp",
+    "onclick": "",
+    "target": "",
+    "tag_path": "OL.history f_r > LI. > A",
+    "outer_html": "<a href=\"/index.jsp\"><img style=\"margin-bottom:3px\" src=\"/_img/cont/home.png\" alt=\"home\"></a>"
+  },
+  {
+    "index": 90,
+    "text": "통합검색",
+    "href": "/web/explainInfo/constitutionDcn.jsp",
+    "onclick": "",
+    "target": "",
+    "tag_path": "OL.history f_r > LI. > A",
+    "outer_html": "<a href=\"/web/explainInfo/constitutionDcn.jsp\" class=\"on\">통합검색</a>"
+  },
+  {
+    "index": 91,
+    "text": "검색",
+    "href": "javascript:doSearchPu();",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.search_all_box overflow > DIV.sc_bar > A",
+    "outer_html": "<a class=\"sc_icon\" href=\"javascript:doSearchPu();\" alt=\"검색하기\">검색</a>"
+  },
+  {
+    "index": 92,
+    "text": "상세검색",
+    "href": "javascript:;",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.search_all_box overflow > DIV.help_btn > A",
+    "outer_html": "<a class=\"detail_btn\" href=\"javascript:;\">상세검색</a>"
+  },
+  {
+    "index": 93,
+    "text": "검색안내",
+    "href": "javascript:;",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.search_all_box overflow > DIV.help_btn > A",
+    "outer_html": "<a class=\"detail_btn02\" href=\"javascript:;\">검색안내</a>"
+  },
+  {
+    "index": 94,
+    "text": "",
+    "href": "javascript:;",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.layer_pop_wrap search_info > DIV.winpop_top02 > A",
+    "outer_html": "<a class=\"close\" href=\"javascript:;\"><img src=\"/_img/cont/layer_close_btn.png\"></a>"
+  },
+  {
+    "index": 95,
+    "text": "전체",
+    "href": "javascript:doCollection('ALL');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI.on > A",
+    "outer_html": "<a href=\"javascript:doCollection('ALL');\" class=\"oneline\">전체</a>"
+  },
+  {
+    "index": 96,
+    "text": "헌법재판소결정례",
+    "href": "javascript:doCollection('ordinance');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI. > A",
+    "outer_html": "<a href=\"javascript:doCollection('ordinance');\">헌법재판소<br>결정례</a>"
+  },
+  {
+    "index": 97,
+    "text": "법원판례 대법원 하급심",
+    "href": "javascript:doCollection('sentencing');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI.tab_line > A",
+    "outer_html": "<a href=\"javascript:doCollection('sentencing');\" class=\"oneline\">\n\t\t\t\t\t\t<span class=\"top\">법원판례</span>\n\t\t\t\t\t\t<span>대법원</span>\n\t\t\t\t\t\t<span class=\"lower\">하급심</span>\n\t\t\t\t\t</a>"
+  },
+  {
+    "index": 98,
+    "text": "조세심판원결정례",
+    "href": "javascript:doCollection('screen');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI. > A",
+    "outer_html": "<a href=\"javascript:doCollection('screen');\">조세심판원<br>결정례</a>"
+  },
+  {
+    "index": 99,
+    "text": "감사원결정례",
+    "href": "javascript:doCollection('evaluation');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI. > A",
+    "outer_html": "<a href=\"javascript:doCollection('evaluation');\">감사원<br>결정례</a>"
+  },
+  {
+    "index": 100,
+    "text": "법제처해석",
+    "href": "javascript:doCollection('legal');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI. > A",
+    "outer_html": "<a href=\"javascript:doCollection('legal');\" class=\"oneline\">법제처해석</a>"
+  },
+  {
+    "index": 101,
+    "text": "행정안전부유권해석",
+    "href": "javascript:doCollection('authoritative');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI. > A",
+    "outer_html": "<a href=\"javascript:doCollection('authoritative');\">행정안전부<br>유권해석</a>"
+  },
+  {
+    "index": 102,
+    "text": "기타",
+    "href": "javascript:doCollection('bbs');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "UL.off_tb_tab2 > LI. test > A",
+    "outer_html": "<a href=\"javascript:doCollection('bbs');\">기타</a>"
+  },
+  {
+    "index": 103,
+    "text": "전체",
+    "href": "javascript:SetDate('all');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('all');\" class=\"on\">전체</a>"
+  },
+  {
+    "index": 104,
+    "text": "최근 6개월",
+    "href": "javascript:SetDate('180');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('180');\">최근 6개월</a>"
+  },
+  {
+    "index": 105,
+    "text": "최근 1년",
+    "href": "javascript:SetDate('365');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('365');\">최근 1년</a>"
+  },
+  {
+    "index": 106,
+    "text": "최근 2년",
+    "href": "javascript:SetDate('730');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('730');\">최근 2년</a>"
+  },
+  {
+    "index": 107,
+    "text": "최근 3년",
+    "href": "javascript:SetDate('1095');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('1095');\">최근 3년</a>"
+  },
+  {
+    "index": 108,
+    "text": "최근 4년",
+    "href": "javascript:SetDate('1460');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('1460');\">최근 4년</a>"
+  },
+  {
+    "index": 109,
+    "text": "최근 5년",
+    "href": "javascript:SetDate('1825');",
+    "onclick": "",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.abtn > A",
+    "outer_html": "<a href=\"javascript:SetDate('1825');\">최근 5년</a>"
+  },
+  {
+    "index": 110,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "detailSearch('1');",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.sc_bar > A",
+    "outer_html": "<a class=\"sc_icon\" href=\"javascript:void(0);\" onclick=\"detailSearch('1');\"><img src=\"/_img/cont/btn_searchm.png\" alt=\"검색하기\"></a>"
+  },
+  {
+    "index": 111,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "detailSearch('2');",
+    "target": "",
+    "tag_path": "TD. > P.sc_bar > A",
+    "outer_html": "<a class=\"sc_icon\" href=\"javascript:void(0);\" onclick=\"detailSearch('2');\"><img src=\"/_img/cont/r_search.png\" alt=\"검색하기\"></a>"
+  },
+  {
+    "index": 112,
+    "text": "검색결과 더보기",
+    "href": "javascript:void(0);",
+    "onclick": "doCollection('sentencing');",
+    "target": "",
+    "tag_path": "DIV.search_tit > P.sar_more > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"doCollection('sentencing');\">검색결과 더보기</a>"
+  },
+  {
+    "index": 113,
+    "text": "장애인과 공동으로 자동차를 취득하여 취득세 등을 감면받은 다음 장애인과 다른 곳으로 주소지를 이전한 경우",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인과 공동으로 자동차를 취득하여 취득세 등을 감면받은 다음 장애인과 다른 곳으로 주소지를 이전한 경우','javascript:decisionDtlpopUp(19000479, 60036739, null)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인과 공동으로 자동차를 취득하여 취득세 등을 감면받은 다음 장애인과 다른 곳으로 주소지를 이전한 경우','javascript:decisionDtlpopUp(19000479, 60036739, null)');\"><font color=\"red\" class=\"keyword\">장애인</font>과 공동으로 자동차를 취득하여 취득세 등을 <font color=\"red\" class=\"keyword\">감면</font>받은 다음 <font color=\"red\" class=\"keyword\">장애인</font>과 다른 곳으로 주소지를 이전한 경우</a>"
+  },
+  {
+    "index": 114,
+    "text": "장애인과 공동으로 자동차를 취득하여 취득세 등을 감면받은 다음 장애인과 다른 곳으로 주소지를 이전하였다면 감면조례 에서 주민등록법에 따른 세대별 주민등록표에 기재되어 있는지 여부를",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인과 공동으로 자동차를 취득하여 취득세 등을 감면받은 다음 장애인과 다른 곳으로 주소지를 이전한 경우','javascript:decisionDtlpopUp(19000479, 60036739, null)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인과 공동으로 자동차를 취득하여 취득세 등을 감면받은 다음 장애인과 다른 곳으로 주소지를 이전한 경우','javascript:decisionDtlpopUp(19000479, 60036739, null)');\"><font color=\"red\" class=\"keyword\">장애인</font>과 공동으로 자동차를 취득하여 취득세 등을 <font color=\"red\" class=\"keyword\">감면</font>받은 다음 <font color=\"red\" class=\"keyword\">장애인</font>과 다른 곳으로 주소지를 이전하였다면 <font color=\"red\" class=\"keyword\">감면</font>"
+  },
+  {
+    "index": 115,
+    "text": "장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 처분은 정당한지",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 처분은 정당한지','javascript:decisionDtlpopUp(19000574, 60036999, null)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 처분은 정당한지','javascript:decisionDtlpopUp(19000574, 60036999, null)');\"><font color=\"red\" class=\"keyword\">장애인</font>이 취득한 차량은 <font color=\"red\" class=\"keyword\">감면</font>대상이나 세대를 분리함에 따라 부과한 처분은 정당한지</a>"
+  },
+  {
+    "index": 116,
+    "text": "장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 이 사건 처분은 정당하고 제소기간을 경과하여 소를 제기함에 따라 각하대상이라는 사례",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 처분은 정당한지','javascript:decisionDtlpopUp(19000574, 60036999, null)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 처분은 정당한지','javascript:decisionDtlpopUp(19000574, 60036999, null)');\">장애인이 취득한 차량은 감면대상이나 세대를 분리함에 따라 부과한 이 사건 처분은 정당하고 제소기간을 경과하여 소를 제기함에 따라 각하대상이라는 사례</a>"
+  },
+  {
+    "index": 117,
+    "text": "장애인인 원고가 형식상으로만 주민등록을 이전하였다가, 얼마후 다시 주민등록을 원상으로 회복한 경우 장애인 차량에 대한...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인인 원고가 형식상으로만 주민등록을 이전하였다가, 얼마후 다시 주민등록을 원상으로 회복한 경우 장애인 차량에 대한...','javascript:decisionDtlpopUp(19000123, 60035727, null)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인인 원고가 형식상으로만 주민등록을 이전하였다가, 얼마후 다시 주민등록을 원상으로 회복한 경우 장애인 차량에 대한...','javascript:decisionDtlpopUp(19000123, 60035727, null)');\">장애인인 원고가 형식상으로만 주민등록을 이전하였다가, 얼마후 다시 주민등록을 원상으로 회복한 경우 장애인 차량에 대한...</a>"
+  },
+  {
+    "index": 118,
+    "text": "관할행정청의 감면조례 상의 부득이한 사유란 사망·혼인·해외이민·운전면허취소와 같이 국내에서 더 이상 운전을 하지 못할 사유이거나 동거가족이 불가피하게 변경되는 사유만을 가리킨다고 ",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인인 원고가 형식상으로만 주민등록을 이전하였다가, 얼마후 다시 주민등록을 원상으로 회복한 경우 장애인 차량에 대한...','javascript:decisionDtlpopUp(19000123, 60035727, null)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인인 원고가 형식상으로만 주민등록을 이전하였다가, 얼마후 다시 주민등록을 원상으로 회복한 경우 장애인 차량에 대한...','javascript:decisionDtlpopUp(19000123, 60035727, null)');\">관할행정청의 감면조례 상의 부득이한 사유란 사망·혼인·해외이민·운전면허취소와 같이 국내에서 더 이상 운전을 하지 못할 사유이거나 동거가족이 불가피하게 변경되는 사유만을 가리킨다고 보는 것이 합당하므로 다른 ...</a>"
+  },
+  {
+    "index": 119,
+    "text": "검색결과 더보기",
+    "href": "javascript:void(0);",
+    "onclick": "doCollection('screen');",
+    "target": "",
+    "tag_path": "DIV.search_tit > P.sar_more > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"doCollection('screen');\">검색결과 더보기</a>"
+  },
+  {
+    "index": 120,
+    "text": "청구인이 장애인인 어머니와 공동명의로 장애인용 자동차를 취득하여 취득세를 감면받은 후 1년 이내에 세대분리를 함에 따...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('청구인이 장애인인 어머니와 공동명의로 장애인용 자동차를 취득하여 취득세를 감면받은 후 1년 이내에 세대분리를 함에 따...','javascript:screenPopUp(60094772)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('청구인이 장애인인 어머니와 공동명의로 장애인용 자동차를 취득하여 취득세를 감면받은 후 1년 이내에 세대분리를 함에 따...','javascript:screenPopUp(60094772)');\">청구인이 <font color=\"red\" class=\"keyword\">장애인</font>인 어머니와 공동명의로 <font color=\"red\" class=\"keyword\">장애인</font>용 자동차를 취득하여 취득세를 <font color=\"red\" class=\"keyword\">감면</font>받은 후 1년 이내에 세대분리를 함에 따...</a>"
+  },
+  {
+    "index": 121,
+    "text": "청구인이 어머니의 장기간 병원치료에 따른 생계곤란으로 병원비를 지원받고자 주소지를 이전한 것이 지특법 제17조 제3항에서 규정하고 있는 사망, 혼인, 해외이민, 운전면허취소, 그 ",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('청구인이 장애인인 어머니와 공동명의로 장애인용 자동차를 취득하여 취득세를 감면받은 후 1년 이내에 세대분리를 함에 따...','javascript:screenPopUp(60094772)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('청구인이 장애인인 어머니와 공동명의로 장애인용 자동차를 취득하여 취득세를 감면받은 후 1년 이내에 세대분리를 함에 따...','javascript:screenPopUp(60094772)');\">청구인이 어머니의 장기간 병원치료에 따른 생계곤란으로 병원비를 지원받고자 주소지를 이전한 것이 지특법 제17조 제3항에서 규정하고 있는 사망, 혼인, 해외이민, 운전면허취소, 그 밖에 이와 유사한 부득이한 ...</a>"
+  },
+  {
+    "index": 122,
+    "text": "쟁점자동차는 승차인원을 5인승에서 7인승으로 확대한 구조변경자동차로서 장애인 보철용ㆍ생업활동용에 사용하기 위한 자동차...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('쟁점자동차는 승차인원을 5인승에서 7인승으로 확대한 구조변경자동차로서 장애인 보철용ㆍ생업활동용에 사용하기 위한 자동차...','javascript:screenPopUp(60094410)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('쟁점자동차는 승차인원을 5인승에서 7인승으로 확대한 구조변경자동차로서 장애인 보철용ㆍ생업활동용에 사용하기 위한 자동차...','javascript:screenPopUp(60094410)');\">쟁점자동차는 승차인원을 5인승에서 7인승으로 확대한 구조변경자동차로서 <font color=\"red\" class=\"keyword\">장애인</font> 보철용ㆍ생업활동용에 사용하기 위한 자동차...</a>"
+  },
+  {
+    "index": 123,
+    "text": "쟁점자동차는 「지방세특례제한법」제17조 제1항 제1호 나목에 따른 구조변경 전의 승차 정원이 7명이상 10명 이하의 자동차가 아닌 승차 정원이 5명인 자동차로서 위 규정의 감면요건",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('쟁점자동차는 승차인원을 5인승에서 7인승으로 확대한 구조변경자동차로서 장애인 보철용ㆍ생업활동용에 사용하기 위한 자동차...','javascript:screenPopUp(60094410)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('쟁점자동차는 승차인원을 5인승에서 7인승으로 확대한 구조변경자동차로서 장애인 보철용ㆍ생업활동용에 사용하기 위한 자동차...','javascript:screenPopUp(60094410)');\">쟁점자동차는 「지방세특례제한법」제17조 제1항 제1호 나목에 따른 구조변경 전의 승차 정원이 7명이상 10명 이하의 자동차가 아닌 승차 정원이 5명인 자동차로서 위 규정의 감면요건을 충족하지 못하였음.</a>"
+  },
+  {
+    "index": 124,
+    "text": "모두 장애인인 부부가 공동명의로 등록한 자동차에 대하여 세대분리를 하였다는 사유로 세대분리기간 동안 감면하였던 자동차...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('모두 장애인인 부부가 공동명의로 등록한 자동차에 대하여 세대분리를 하였다는 사유로 세대분리기간 동안 감면하였던 자동차...','javascript:screenPopUp(60093343)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('모두 장애인인 부부가 공동명의로 등록한 자동차에 대하여 세대분리를 하였다는 사유로 세대분리기간 동안 감면하였던 자동차...','javascript:screenPopUp(60093343)');\">모두 장애인인 부부가 공동명의로 등록한 자동차에 대하여 세대분리를 하였다는 사유로 세대분리기간 동안 감면하였던 자동차...</a>"
+  },
+  {
+    "index": 125,
+    "text": "「지방세특례제한법」제17조 제3항의 추징규정은 위와 같이 장애인과 비장애인이 공동명의로 등록하였다가 세대를 분리하는 경우에는 해당 자동차가 장애인의 보철용 등으로 사용되지 아니하는",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('모두 장애인인 부부가 공동명의로 등록한 자동차에 대하여 세대분리를 하였다는 사유로 세대분리기간 동안 감면하였던 자동차...','javascript:screenPopUp(60093343)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('모두 장애인인 부부가 공동명의로 등록한 자동차에 대하여 세대분리를 하였다는 사유로 세대분리기간 동안 감면하였던 자동차...','javascript:screenPopUp(60093343)');\">「지방세특례제한법」제17조 제3항의 추징규정은 위와 같이 장애인과 비장애인이 공동명의로 등록하였다가 세대를 분리하는 경우에는 해당 자동차가 장애인의 보철용 등으로 사용되지 아니하는 것으로 보아 면제된 취득세...</a>"
+  },
+  {
+    "index": 126,
+    "text": "검색결과 더보기",
+    "href": "javascript:void(0);",
+    "onclick": "doCollection('evaluation');",
+    "target": "",
+    "tag_path": "DIV.search_tit > P.sar_more > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"doCollection('evaluation');\">검색결과 더보기</a>"
+  },
+  {
+    "index": 127,
+    "text": "기존 감면 받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면을 받을 경우 이를 대체취득 감면 대상...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('기존 감면 받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면을 받을 경우 이를 대체취득 감면 대상...','javascript:evaluationPopUp(60086987)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('기존 감면 받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면을 받을 경우 이를 대체취득 감면 대상...','javascript:evaluationPopUp(60086987)');\">기존 <font color=\"red\" class=\"keyword\">감면</font> 받은 차량을 소유한 상태에서 새로운 차량을 취득하여 <font color=\"red\" class=\"keyword\">장애인</font> 차량 <font color=\"red\" class=\"keyword\">감면</font>을 받을 경우 이를 대체취득 <font color=\"red\" class=\"keyword\">감면</font> 대상..."
+  },
+  {
+    "index": 128,
+    "text": "기존 장애인 차량 감면받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면 받고자 하는 것은 대체취득 감면대상에 해당되지 않으므로 추징대상에 해당함",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('기존 감면 받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면을 받을 경우 이를 대체취득 감면 대상...','javascript:evaluationPopUp(60086987)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('기존 감면 받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면을 받을 경우 이를 대체취득 감면 대상...','javascript:evaluationPopUp(60086987)');\">기존 장애인 차량 감면받은 차량을 소유한 상태에서 새로운 차량을 취득하여 장애인 차량 감면 받고자 하는 것은 대체취득 감면대상에 해당되지 않으므로 추징대상에 해당함</a>"
+  },
+  {
+    "index": 129,
+    "text": "장애인 자녀의 중학교 진학을 위해 자동차 등록일부터 1년 이내에 세대를 분가한 경우 기 감면한 취득세를 추징할 수 있...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 자녀의 중학교 진학을 위해 자동차 등록일부터 1년 이내에 세대를 분가한 경우 기 감면한 취득세를 추징할 수 있...','javascript:evaluationPopUp(60084684)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 자녀의 중학교 진학을 위해 자동차 등록일부터 1년 이내에 세대를 분가한 경우 기 감면한 취득세를 추징할 수 있...','javascript:evaluationPopUp(60084684)');\">장애인 자녀의 중학교 진학을 위해 자동차 등록일부터 1년 이내에 세대를 분가한 경우 기 감면한 취득세를 추징할 수 있...</a>"
+  },
+  {
+    "index": 130,
+    "text": "청구인들은 관련 법령을 잘 모른 채, 청구인 B이 장애인 특수학급이 있는 중학교를 배정받기 위하여 주소를 이전한 것이므로 이러한 사정들을 고려하여 이 사건 부과처분을 취소하여 달라",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 자녀의 중학교 진학을 위해 자동차 등록일부터 1년 이내에 세대를 분가한 경우 기 감면한 취득세를 추징할 수 있...','javascript:evaluationPopUp(60084684)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 자녀의 중학교 진학을 위해 자동차 등록일부터 1년 이내에 세대를 분가한 경우 기 감면한 취득세를 추징할 수 있...','javascript:evaluationPopUp(60084684)');\">청구인들은 관련 법령을 잘 모른 채, 청구인 B이 장애인 특수학급이 있는 중학교를 배정받기 위하여 주소를 이전한 것이므로 이러한 사정들을 고려하여 이 사건 부과처분을 취소하여 달라고 주장하나, ① 구 「지방...</a>"
+  },
+  {
+    "index": 131,
+    "text": "장애인과 공동명의로 자동차를 등록한 후 1년 이내 주민등록을 이전한 경우 면제한 취득세 등을 추징할 수 있는지와 청구...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인과 공동명의로 자동차를 등록한 후 1년 이내 주민등록을 이전한 경우 면제한 취득세 등을 추징할 수 있는지와 청구...','javascript:evaluationPopUp(60046247)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인과 공동명의로 자동차를 등록한 후 1년 이내 주민등록을 이전한 경우 면제한 취득세 등을 추징할 수 있는지와 청구...','javascript:evaluationPopUp(60046247)');\">장애인과 공동명의로 자동차를 등록한 후 1년 이내 주민등록을 이전한 경우 면제한 취득세 등을 추징할 수 있는지와 청구...</a>"
+  },
+  {
+    "index": 132,
+    "text": "장애인과 공동명의로 자동차를 등록한 후 1년 이내 장애인이 세대분가한 경우 감면을 위한 최소한의 조건에 해당하지 않게 되므로 부득이한 사유가 없는 한 처분청이 취득세 등 부과처분을",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인과 공동명의로 자동차를 등록한 후 1년 이내 주민등록을 이전한 경우 면제한 취득세 등을 추징할 수 있는지와 청구...','javascript:evaluationPopUp(60046247)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인과 공동명의로 자동차를 등록한 후 1년 이내 주민등록을 이전한 경우 면제한 취득세 등을 추징할 수 있는지와 청구...','javascript:evaluationPopUp(60046247)');\">장애인과 공동명의로 자동차를 등록한 후 1년 이내 장애인이 세대분가한 경우 감면을 위한 최소한의 조건에 해당하지 않게 되므로 부득이한 사유가 없는 한 처분청이 취득세 등 부과처분을 한 것은 잘못이 없다.</a>"
+  },
+  {
+    "index": 133,
+    "text": "검색결과 더보기",
+    "href": "javascript:void(0);",
+    "onclick": "doCollection('legal');",
+    "target": "",
+    "tag_path": "DIV.search_tit > P.sar_more > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"doCollection('legal');\">검색결과 더보기</a>"
+  },
+  {
+    "index": 134,
+    "text": "장애인본인과 자녀공동명의로 등록된 승용차의 자동차세 감면관련질의",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인본인과 자녀공동명의로 등록된 승용차의 자동차세 감면관련질의','javascript:legalPopUp(30000535)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인본인과 자녀공동명의로 등록된 승용차의 자동차세 감면관련질의','javascript:legalPopUp(30000535)');\"><font color=\"red\" class=\"keyword\">장애인</font>본인과 자녀공동명의로 등록된 승용차의 자동차세 <font color=\"red\" class=\"keyword\">감면</font>관련질의</a>"
+  },
+  {
+    "index": 135,
+    "text": "서울특별시 감면조례 제4조에서 “장애인이 본인명의로 등록”이라 한다.은 장애인 단독명의로 말하는 것으로서 타인과 공동으로 등록한 경우에는 이에 해당되는 것으로 볼 수 없다. 따라서",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인본인과 자녀공동명의로 등록된 승용차의 자동차세 감면관련질의','javascript:legalPopUp(30000535)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인본인과 자녀공동명의로 등록된 승용차의 자동차세 감면관련질의','javascript:legalPopUp(30000535)');\">서울특별시 <font color=\"red\" class=\"keyword\">감면</font>조례 제4조에서 “<font color=\"red\" class=\"keyword\">장애인</font>이 본인명의로 등록”이라 한다.은 <font color=\"red\" class=\"keyword\">장애인</font> 단독명의로 말하는 것으로서 타인과 공동으로 등록한 경우에는 이에 해당되는 것으로 볼 수 없다. 따라서, 귀문과 같이 부모 또는 ...</a>"
+  },
+  {
+    "index": 136,
+    "text": "병무청 - 가사사정으로 인한 병역감면 대상자의 토지·건축물 등의 재산자료를 확인하기 위해 과세정보를 요청하는...",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('병무청 - 가사사정으로 인한 병역감면 대상자의 토지·건축물 등의 재산자료를 확인하기 위해 과세정보를 요청하는...','javascript:legalPopUp(60000084)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('병무청 - 가사사정으로 인한 병역감면 대상자의 토지·건축물 등의 재산자료를 확인하기 위해 과세정보를 요청하는...','javascript:legalPopUp(60000084)');\">병무청 - 가사사정으로 인한 병역<font color=\"red\" class=\"keyword\">감면</font> 대상자의 토지·건축물 등의 재산자료를 확인하기 위해 과세정보를 요청하는...</a>"
+  },
+  {
+    "index": 137,
+    "text": "생계유지곤란으로 병역감면을 원하여 병무행정관서의 장이 재산자료를 확인하기 위하여 과세정보를 요청하는 경우 공익적 목적, 병역감면 대상자의 이익에 부합하므로 지방자치단체의 장은 병무",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('병무청 - 가사사정으로 인한 병역감면 대상자의 토지·건축물 등의 재산자료를 확인하기 위해 과세정보를 요청하는...','javascript:legalPopUp(60000084)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('병무청 - 가사사정으로 인한 병역감면 대상자의 토지·건축물 등의 재산자료를 확인하기 위해 과세정보를 요청하는...','javascript:legalPopUp(60000084)');\">생계유지곤란으로 병역<font color=\"red\" class=\"keyword\">감면</font>을 원하여 병무행정관서의 장이 재산자료를 확인하기 위하여 과세정보를 요청하는 경우 공익적 목적, 병역<font color=\"red\" class=\"keyword\">감면</font> 대상자의 이익에 부합하므로 지방자치단체의 장은 병무행정관서의 장에게 제공할 수...</a>"
+  },
+  {
+    "index": 138,
+    "text": "경상남도 고성군 - 적용기한이 지난 조례의 개정 형식과 소급적용 문제(「고성군세 감면조례」 부칙 관련)",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('경상남도 고성군 - 적용기한이 지난 조례의 개정 형식과 소급적용 문제(「고성군세 감면조례」 부칙 관련)','javascript:legalPopUp(30000477)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('경상남도 고성군 - 적용기한이 지난 조례의 개정 형식과 소급적용 문제(「고성군세 감면조례」 부칙 관련)','javascript:legalPopUp(30000477)');\">경상남도 고성군 - 적용기한이 지난 조례의 개정 형식과 소급적용 문제(「고성군세 <font color=\"red\" class=\"keyword\">감면</font>조례」 부칙 관련)</a>"
+  },
+  {
+    "index": 139,
+    "text": "법령은 원칙적으로 계속 적용되는 것을 전제로 만들어지고, 더 이상 적용할 필요가 없으면 법령의 폐지를 통해서 정리해주는 것이 원칙이나, 일정한 기간만 시행되고 그 기간이 지난 후에",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('경상남도 고성군 - 적용기한이 지난 조례의 개정 형식과 소급적용 문제(「고성군세 감면조례」 부칙 관련)','javascript:legalPopUp(30000477)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('경상남도 고성군 - 적용기한이 지난 조례의 개정 형식과 소급적용 문제(「고성군세 감면조례」 부칙 관련)','javascript:legalPopUp(30000477)');\">법령은 원칙적으로 계속 적용되는 것을 전제로 만들어지고, 더 이상 적용할 필요가 없으면 법령의 폐지를 통해서 정리해주는 것이 원칙이나, 일정한 기간만 시행되고 그 기간이 지난 후에는 실효되도록 미리 예정하여...</a>"
+  },
+  {
+    "index": 140,
+    "text": "검색결과 더보기",
+    "href": "javascript:void(0);",
+    "onclick": "doCollection('authoritative');",
+    "target": "",
+    "tag_path": "DIV.search_tit > P.sar_more > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"doCollection('authoritative');\">검색결과 더보기</a>"
+  },
+  {
+    "index": 141,
+    "text": "장애인용 자동차 취득에 따른 감면 해당 여부 질의 회신",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인용 자동차 취득에 따른 감면 해당 여부 질의 회신','javascript:authoritativePopUp(60095968)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인용 자동차 취득에 따른 감면 해당 여부 질의 회신','javascript:authoritativePopUp(60095968)');\"><font color=\"red\" class=\"keyword\">장애인</font>용 자동차 취득에 따른 <font color=\"red\" class=\"keyword\">감면</font> 해당 여부 질의 회신</a>"
+  },
+  {
+    "index": 142,
+    "text": "장애인이 지방세 감면을 신청하여 취득세 및 자동차세 감면을 적용받고 있는 차량이 있는 경우에는 다른 차량에 대해 감면을 적용할 수 없으나, 종전 면제받은 차량을 이전·말소하는 경우",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인용 자동차 취득에 따른 감면 해당 여부 질의 회신','javascript:authoritativePopUp(60095968)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인용 자동차 취득에 따른 감면 해당 여부 질의 회신','javascript:authoritativePopUp(60095968)');\"><font color=\"red\" class=\"keyword\">장애인</font>이 지방세 <font color=\"red\" class=\"keyword\">감면</font>을 신청하여 취득세 및 자동차세 <font color=\"red\" class=\"keyword\">감면</font>을 적용받고 있는 차량이 있는 경우에는 다른 차량에 대해 <font color=\"red\" class=\"keyword\">감면</font>을 적용할 수 없으나, 종전 면제받은 차량을 이전·말소하는 경우 또는"
+  },
+  {
+    "index": 143,
+    "text": "장애인 감면차량 구조 변경에 대한 취득세 감면대상 여부 회신",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 감면차량 구조 변경에 대한 취득세 감면대상 여부 회신','javascript:authoritativePopUp(60087388)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 감면차량 구조 변경에 대한 취득세 감면대상 여부 회신','javascript:authoritativePopUp(60087388)');\"><font color=\"red\" class=\"keyword\">장애인</font> <font color=\"red\" class=\"keyword\">감면</font>차량 구조 변경에 대한 취득세 <font color=\"red\" class=\"keyword\">감면</font>대상 여부 회신</a>"
+  },
+  {
+    "index": 144,
+    "text": "장애인의 보철용·생업활동용에 사용을 목적으로 하는 점, 당해 취득을 감면대상에서 제외한다는 별도의 규정이 없는 점 등을 종합적으로 고려할 때, 장애인 차량에 휠체어리프트 설치를 위",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 감면차량 구조 변경에 대한 취득세 감면대상 여부 회신','javascript:authoritativePopUp(60087388)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 감면차량 구조 변경에 대한 취득세 감면대상 여부 회신','javascript:authoritativePopUp(60087388)');\">장애인의 보철용·생업활동용에 사용을 목적으로 하는 점, 당해 취득을 감면대상에서 제외한다는 별도의 규정이 없는 점 등을 종합적으로 고려할 때, 장애인 차량에 휠체어리프트 설치를 위한 종류 변경 취득은 취득세...</a>"
+  },
+  {
+    "index": 145,
+    "text": "장애인 자동차에 대한 취득세 감면 여부 질의 회신",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 자동차에 대한 취득세 감면 여부 질의 회신','javascript:authoritativePopUp(60086613)');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 자동차에 대한 취득세 감면 여부 질의 회신','javascript:authoritativePopUp(60086613)');\"><font color=\"red\" class=\"keyword\">장애인</font> 자동차에 대한 취득세 <font color=\"red\" class=\"keyword\">감면</font> 여부 질의 회신</a>"
+  },
+  {
+    "index": 146,
+    "text": "「지방세특례제한법」 제17조 제2항에서 규정하는 대체취득에 대한 감면요건을 적용하기 위해서는 종전 면제받던 자동차를 말소등록하거나 장애인과 공동명의로 등록한 자가 아닌자에게 이전하",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 자동차에 대한 취득세 감면 여부 질의 회신','javascript:authoritativePopUp(60086613)');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 자동차에 대한 취득세 감면 여부 질의 회신','javascript:authoritativePopUp(60086613)');\">「지방세특례제한법」 제17조 제2항에서 규정하는 대체취득에 대한 감면요건을 적용하기 위해서는 종전 면제받던 자동차를 말소등록하거나 장애인과 공동명의로 등록한 자가 아닌자에게 이전하고 다른 자동차를 취득하는 ...</a>"
+  },
+  {
+    "index": 147,
+    "text": "검색결과 더보기",
+    "href": "javascript:void(0);",
+    "onclick": "doCollection('bbs');",
+    "target": "",
+    "tag_path": "DIV.search_tit > P.sar_more > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"doCollection('bbs');\">검색결과 더보기</a>"
+  },
+  {
+    "index": 148,
+    "text": "장애인 감면차량 공동등록가능자에게 이전시 감면여부",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 감면차량 공동등록가능자에게 이전시 감면여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=87715&menuNo=21200000&upperMenuId=21000000&bbsId=BBSMSTR_000000000151\\')');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 감면차량 공동등록가능자에게 이전시 감면여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=87715&amp;menuNo=21200000&amp;upperMenuId=21000000&amp;bbsId=BBSMSTR_000000000151\\')');\"><font color=\"red\" class=\"keyword\">장애인</font> <font color=\"red\" class=\"keyword\">감면</font>차량 공동등록가능자에게 이전시 <font color=\"red\" class=\"keyword\">감면</f"
+  },
+  {
+    "index": 149,
+    "text": "안녕하세요~ 늘 많은 도움받고 있음에 감사드립니다. ^^ 장애인 취득 차량 감면 중 헷갈리는 점이 생겨서 질문드립니다. <상황: 장애인 가, 공동등록 가능한 동거가족 나, 다> ①",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 감면차량 공동등록가능자에게 이전시 감면여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=87715&menuNo=21200000&upperMenuId=21000000&bbsId=BBSMSTR_000000000151\\')');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 감면차량 공동등록가능자에게 이전시 감면여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=87715&amp;menuNo=21200000&amp;upperMenuId=21000000&amp;bbsId=BBSMSTR_000000000151\\')');\">안녕하세요~ 늘 많은 도움받고 있음에 감사드립니다. ^^&nbsp;장애인 취득 차량 감면 중 헷갈리는 점이 생겨서 질문드립니다.&nbsp;&lt;상황: 장애인 가, 공동등록 가능한 동거가족 나, 다&gt;&nbsp;① 25. 7. 18.: A 차량을 장애인 "
+  },
+  {
+    "index": 150,
+    "text": "장애인 2명 공동명의 차량 적용방법",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 2명 공동명의 차량 적용방법','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82307&menuNo=21200000&upperMenuId=21000000&bbsId=BBSMSTR_000000000151\\')');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 2명 공동명의 차량 적용방법','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82307&amp;menuNo=21200000&amp;upperMenuId=21000000&amp;bbsId=BBSMSTR_000000000151\\')');\"><font color=\"red\" class=\"keyword\">장애인</font> 2명 공동명의 차량 적용방법</a>"
+  },
+  {
+    "index": 151,
+    "text": "안녕하세요. 수고많으십니다. 늘 많은 도움을 받고있습니다!! 장애인 자동차 취득세 및 자동차세 감면 관련해서 질의드립니다. 1번 차량: A(아내 중증 장애인),C(아들 비장애인) ",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('장애인 2명 공동명의 차량 적용방법','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82307&menuNo=21200000&upperMenuId=21000000&bbsId=BBSMSTR_000000000151\\')');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('장애인 2명 공동명의 차량 적용방법','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82307&amp;menuNo=21200000&amp;upperMenuId=21000000&amp;bbsId=BBSMSTR_000000000151\\')');\">안녕하세요. 수고많으십니다.&nbsp;늘 많은 도움을 받고있습니다!!&nbsp;장애인 자동차 취득세 및 자동차세 감면 관련해서 질의드립니다.&nbsp;&nbsp;1번 차량: A(아내 중증 장애인),C(아들 비장애인) 감면받다가 =&gt; A(아내 중증 장애인)​,B(남편 "
+  },
+  {
+    "index": 152,
+    "text": "A장애인(공동명의B) 차량 감면 후 1년이 경과하였고 B의 지분이전 없이 C장애인으로 이전 한 경우로서 A장애인은 향후 차량 감면시 대체취득인지 여부",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('A장애인(공동명의B) 차량 감면 후 1년이 경과하였고 B의 지분이전 없이 C장애인으로 이전 한 경우로서 A장애인은 향후 차량 감면시 대체취득인지 여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82299&menuNo=21200000&upperMenuId=21000000&bbsId=BBSMSTR_000000000151\\')');",
+    "target": "",
+    "tag_path": "LI. > P.tt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('A장애인(공동명의B) 차량 감면 후 1년이 경과하였고 B의 지분이전 없이 C장애인으로 이전 한 경우로서 A장애인은 향후 차량 감면시 대체취득인지 여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82299&amp;menuNo=21200000&amp;upperMenuId=21000000&amp;bbsId=BBSMSTR_000000000151\\')');\">A<font color=\"red\" class=\"keyword\">장애인</font>(공동명의B) 차량 <font color=\"red\" class=\"keyword"
+  },
+  {
+    "index": 153,
+    "text": "명쾌한 답변이 도출되지 않아서 질의 드립니다. 2024.4.1. 장애인아들A(지분50%)와 아버지B(지분50%)​ 공동명의로 차량(갑) 취득(취득세 감면) 2024.5.1. 차량(",
+    "href": "javascript:void(0);",
+    "onclick": "AddViewDocument('A장애인(공동명의B) 차량 감면 후 1년이 경과하였고 B의 지분이전 없이 C장애인으로 이전 한 경우로서 A장애인은 향후 차량 감면시 대체취득인지 여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82299&menuNo=21200000&upperMenuId=21000000&bbsId=BBSMSTR_000000000151\\')');",
+    "target": "",
+    "tag_path": "LI. > P.txt > A",
+    "outer_html": "<a href=\"javascript:void(0);\" onclick=\"AddViewDocument('A장애인(공동명의B) 차량 감면 후 1년이 경과하였고 B의 지분이전 없이 C장애인으로 이전 한 경우로서 A장애인은 향후 차량 감면시 대체취득인지 여부','javascript:bbsPopUp(\\'https://www.olta.re.kr/cop/bbs/selectBoardArticle.do?nttId=82299&amp;menuNo=21200000&amp;upperMenuId=21000000&amp;bbsId=BBSMSTR_000000000151\\')');\">명쾌한 답변이 도출되지 않아서 질의 드립니다.&nbsp;&nbsp;2024.4.1. 장애인아들A(지분50%)와 아버지B(지분50%)​ 공동명의로 차량(갑) 취"
+  },
+  {
+    "index": 154,
+    "text": "",
+    "href": "javascript:void(0);",
+    "onclick": "detailSearch('3');",
+    "target": "",
+    "tag_path": "TD.sc_cont > P.sc_bar > A",
+    "outer_html": "<a class=\"sc_icon\" href=\"javascript:void(0);\" onclick=\"detailSearch('3');\"><img src=\"/_img/cont/btn_searchm.png\" alt=\"검색하기\"></a>"
+  },
+  {
+    "index": 155,
+    "text": "",
+    "href": "/",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.f_wrap pt50 > H1. > A",
+    "outer_html": "<a href=\"/\"><img src=\"/_img/comn/logo_f.jpg\" alt=\"KILF 지방세 법령정보시스템 로고\"></a>"
+  },
+  {
+    "index": 156,
+    "text": "개인정보 취급방침",
+    "href": "/privatePolicy.do?seq=",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.copy ml25 > P.copy_menu > A",
+    "outer_html": "<a href=\"/privatePolicy.do?seq=\">개인정보 취급방침</a>"
+  },
+  {
+    "index": 157,
+    "text": "사이트맵",
+    "href": "/siteMap.do",
+    "onclick": "",
+    "target": "",
+    "tag_path": "DIV.copy ml25 > P.copy_menu > A",
+    "outer_html": "<a href=\"/siteMap.do\">사이트맵</a>"
+  }
+]

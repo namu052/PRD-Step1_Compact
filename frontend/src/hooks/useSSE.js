@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useAuthStore } from '../stores/authStore'
 import { useChatStore } from '../stores/chatStore'
+import { apiUrl } from '../lib/api'
 
 function parseSSEChunk(chunk, onEvent) {
   const events = chunk.split('\n\n')
@@ -36,6 +36,8 @@ export function useSSE() {
   const addSystemMessage = useChatStore((state) => state.addSystemMessage)
   const setStage = useChatStore((state) => state.setStage)
   const setSources = useChatStore((state) => state.setSources)
+  const updateCrawlProgress = useChatStore((state) => state.updateCrawlProgress)
+  const setCrawlSummary = useChatStore((state) => state.setCrawlSummary)
   const openFinalAnswerPopup = useChatStore((state) => state.openFinalAnswerPopup)
   const finishStream = useChatStore((state) => state.finishStream)
   const failStream = useChatStore((state) => state.failStream)
@@ -114,6 +116,16 @@ export function useSSE() {
           return
         }
 
+        if (eventType === 'crawl_progress') {
+          updateCrawlProgress(data)
+          return
+        }
+
+        if (eventType === 'crawl_summary') {
+          setCrawlSummary(data)
+          return
+        }
+
         if (eventType === 'done') {
           sawTerminalStage = true
           showFinalAnswerPopup()
@@ -122,7 +134,7 @@ export function useSSE() {
       }
 
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch(apiUrl('/api/chat'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -130,12 +142,6 @@ export function useSSE() {
             question,
           }),
         })
-
-        if (response.status === 401) {
-          useAuthStore.getState().resetSession()
-          failStream(aiMessageId, '세션이 만료되었습니다. 다시 로그인해 주세요.')
-          return
-        }
 
         if (!response.ok || !response.body) {
           throw new Error('SSE connection failed')
@@ -166,7 +172,18 @@ export function useSSE() {
         failStream(aiMessageId, '네트워크 오류가 발생했습니다. 다시 시도해 주세요.')
       }
     },
-    [addSystemMessage, appendToken, beginStream, failStream, finishStream, openFinalAnswerPopup, setSources, setStage],
+    [
+      addSystemMessage,
+      appendToken,
+      beginStream,
+      failStream,
+      finishStream,
+      openFinalAnswerPopup,
+      setCrawlSummary,
+      setSources,
+      setStage,
+      updateCrawlProgress,
+    ],
   )
 
   return { streamChat }

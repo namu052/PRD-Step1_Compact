@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import re
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 from playwright.async_api import BrowserContext, Locator, Page, async_playwright
 
 from app.config import OLTA_SELECTORS, get_settings
-from app.models.schemas import CrawlResult
+from app.models.schemas import BoardCollectionStat, CrawlResult
 
 
 BBS_BOARDS = [
@@ -75,6 +76,17 @@ COLLECTION_IDS = {
 
 DEFAULT_COLLECTION_IDS = ["ordinance", "sentencing", "screen", "evaluation", "legal", "authoritative"]
 
+COLLECTION_POPUP_MAP = {
+    "legal": "legalPopUp",
+    "authoritative": "authoritativePopUp",
+    "screen": "screenPopUp",
+    "evaluation": "evaluationPopUp",
+    "ordinance": "constitutionPopUp",
+    "sentencing": "decisionDtlpopUp",
+}
+
+ProgressCallback = Callable[[BoardCollectionStat], Awaitable[None]] | None
+
 
 @dataclass
 class SearchCard:
@@ -133,8 +145,32 @@ class CrawlerService:
     _shared_page: Page | None = None
     _olta_logged_in: bool = False
 
+    async def _is_context_alive(self) -> bool:
+        """shared context가 아직 살아있는지 확인한다."""
+        if self._shared_context is None:
+            return False
+        try:
+            # context.pages 접근으로 liveness 확인
+            _ = self._shared_context.pages
+            return True
+        except Exception:
+            return False
+
     async def ensure_browser(self):
-        """공유 브라우저 컨텍스트를 준비한다."""
+        """공유 브라우저 컨텍스트를 준비한다. 죽었으면 재생성."""
+        if self._shared_context is not None and not await self._is_context_alive():
+            # 죽은 컨텍스트 정리
+            logger.info("Playwright context died — recreating")
+            if self._shared_playwright:
+                try:
+                    await self._shared_playwright.stop()
+                except Exception:
+                    pass
+            self._shared_playwright = None
+            self._shared_context = None
+            self._shared_browser = None
+            self._shared_page = None
+
         if self._shared_context is None:
             pw = await async_playwright().start()
             settings = get_settings()
@@ -159,52 +195,111 @@ class CrawlerService:
         context = await self.ensure_browser()
         settings = get_settings()
         if self._shared_page is None or self._shared_page.is_closed():
+            # 열려있는 기존 페이지 찾기
             for page in context.pages:
                 if not page.is_closed():
                     self._shared_page = page
                     break
             if self._shared_page is None or self._shared_page.is_closed():
-                self._shared_page = await context.new_page()
+                try:
+                    self._shared_page = await context.new_page()
+                except Exception:
+                    # context가 죽었으면 재생성 후 재시도
+                    logger.warning("Failed to create page, recreating browser context")
+                    self._shared_context = None
+                    context = await self.ensure_browser()
+                    self._shared_page = await context.new_page()
             self._shared_page.set_default_timeout(settings.playwright_timeout)
         return self._shared_page
 
     async def _detect_olta_login_on_page(self, page: Page) -> bool:
+        """OLTA 페이지에서 로그인 상태를 감지한다.
+
+        판별 방법 (우선순위):
+        1) URL에 'Login' 또는 'login'이 포함 → 미로그인 (로그인 페이지)
+        2) URL에 'main.do'이고 로그인 페이지가 아님 → 메인에서 DOM 확인
+        3) DOM에서 logout 관련 href/onclick 존재 → 로그인됨
+        """
+        current_url = page.url or ""
+
+        # URL 기반 빠른 판별: 로그인 페이지에 있으면 미로그인
+        if "login" in current_url.lower() or "Login" in current_url:
+            self._olta_logged_in = False
+            return False
+
+        # DOM 기반 판별 (href/onclick 속성은 인코딩 문제 없음)
         logged_in = await page.evaluate("""
             () => {
-                const body = (document.body?.innerText || '').toLowerCase();
-                const candidates = Array.from(document.querySelectorAll('a, button, input[type="button"], input[type="submit"]'));
-                const serialized = candidates.map((node) => {
-                    const text = node.textContent || '';
-                    const value = node.value || '';
-                    const href = node.getAttribute('href') || '';
-                    const onclick = node.getAttribute('onclick') || '';
-                    return `${text} ${value} ${href} ${onclick}`.toLowerCase();
-                });
-                if (serialized.some((value) => value.includes('logout'))) return true;
-                if (serialized.some((value) => value.includes('로그아웃'))) return true;
-                if (body.includes('logout')) return true;
-                if (body.includes('로그아웃')) return true;
-                if (serialized.some((value) => value.includes('login'))) return false;
-                if (serialized.some((value) => value.includes('로그인'))) return false;
-                if (body.includes('login')) return false;
-                if (body.includes('로그인')) return false;
+                const candidates = Array.from(document.querySelectorAll('a, button, input'));
+
+                for (const node of candidates) {
+                    const href = (node.getAttribute('href') || '').toLowerCase();
+                    const onclick = (node.getAttribute('onclick') || '').toLowerCase();
+                    const value = (node.value || '').toLowerCase();
+                    const attrs = `${href} ${onclick} ${value}`;
+
+                    // logout 관련 속성이 있으면 로그인된 상태
+                    if (/logout|logoutaction|fn_logout/i.test(attrs)) {
+                        return true;
+                    }
+                }
+
+                // HTML 소스에서 logout 키워드 검색 (인코딩 무관)
+                const html = document.body?.innerHTML || '';
+                if (/logout|Logout|fn_logout/i.test(html)) {
+                    return true;
+                }
+
                 return false;
             }
         """)
         self._olta_logged_in = logged_in
         return logged_in
 
+    async def bring_browser_to_front(self) -> None:
+        """Playwright 브라우저 창을 앞으로 가져온다."""
+        try:
+            page = await self.ensure_shared_page()
+            await page.bring_to_front()
+            # Windows에서 bring_to_front만으로 활성화가 안 될 수 있으므로
+            # 새 빈 팝업을 열었다 닫아 포커스를 강제로 가져온다
+            await page.evaluate("""
+                () => {
+                    const w = window.open('', '_blank', 'width=1,height=1');
+                    if (w) { w.close(); }
+                    window.focus();
+                }
+            """)
+        except Exception:
+            logger.warning("bring_to_front failed", exc_info=True)
+
     async def check_olta_login(self, navigate: bool = True) -> bool:
-        """OLTA login state check."""
+        """OLTA login state check.  Also opens the OLTA page on first call so
+        the user can log in via the Playwright browser window."""
         page = await self.ensure_shared_page()
         try:
             if navigate:
+                current_url = page.url or ""
                 settings = get_settings()
-                await page.goto(
-                    urljoin(settings.olta_base_url, "/main.do"),
-                    wait_until="domcontentloaded",
-                    timeout=10000,
-                )
+                main_url = urljoin(settings.olta_base_url, "/main.do")
+                if "olta.re.kr" not in current_url:
+                    # 최초: OLTA 메인으로 이동
+                    await page.goto(
+                        main_url,
+                        wait_until="domcontentloaded",
+                        timeout=15000,
+                    )
+                elif "login" in current_url.lower():
+                    # 로그인 페이지 → 사용자가 로그인 후 리다이렉트됐을 수 있으므로
+                    # 메인으로 이동하여 확인
+                    await page.goto(
+                        main_url,
+                        wait_until="domcontentloaded",
+                        timeout=15000,
+                    )
+                else:
+                    # 이미 OLTA 비-로그인 페이지 — reload하여 최신 DOM 확보
+                    await page.reload(wait_until="domcontentloaded", timeout=15000)
             return await self._detect_olta_login_on_page(page)
         except Exception:
             logger.warning("OLTA login check failed", exc_info=True)
@@ -212,12 +307,14 @@ class CrawlerService:
             return False
 
     async def open_olta_for_login(self) -> str:
-        """수동 로그인을 위해 OLTA 페이지를 브라우저에서 연다. 페이지 URL을 반환."""
+        """수동 로그인을 위해 OLTA 페이지를 Playwright 브라우저에서 연다."""
         await self.ensure_browser()
         settings = get_settings()
         page = await self.ensure_shared_page()
         login_url = urljoin(settings.olta_base_url, "/main.do")
-        await page.goto(login_url, wait_until="domcontentloaded")
+        current_url = page.url or ""
+        if "olta.re.kr" not in current_url:
+            await page.goto(login_url, wait_until="domcontentloaded", timeout=15000)
         await page.bring_to_front()
         return login_url
 
@@ -995,10 +1092,16 @@ class CrawlerService:
         )
         return filter_method
 
-    async def search(self, session, queries: list[str], categories: list[str] | None = None) -> list[CrawlResult]:
+    async def search(
+        self,
+        session,
+        queries: list[str],
+        categories: list[str] | None = None,
+        on_progress: ProgressCallback = None,
+    ) -> list[CrawlResult]:
         try:
             context = await self.ensure_browser()
-            return await self._real_search(queries, categories, context)
+            return await self._real_search(queries, categories, context, on_progress=on_progress)
         except Exception:
             logger.warning("OLTA 크롤링 실패, 빈 결과 반환", exc_info=True)
             return []
@@ -1008,6 +1111,7 @@ class CrawlerService:
         queries: list[str],
         categories: list[str] | None = None,
         context: BrowserContext | None = None,
+        on_progress: ProgressCallback = None,
     ) -> list[CrawlResult]:
         settings = get_settings()
         if not queries:
@@ -1027,7 +1131,13 @@ class CrawlerService:
                     query_page_limit = settings.olta_max_pages_per_collection
                 else:
                     query_page_limit = max(2, settings.olta_max_pages_per_collection // 2)
-                cards = await self._collect_query_cards(page, query, categories, query_page_limit)
+                cards = await self._collect_query_cards(
+                    page,
+                    query,
+                    categories,
+                    query_page_limit,
+                    on_progress=on_progress,
+                )
                 for card in cards:
                     existing = cards_by_id.get(card.id)
                     if not existing or card.relevance_score > existing.relevance_score:
@@ -1044,6 +1154,7 @@ class CrawlerService:
                     context,
                     queries[:2],
                     page=shared_page,
+                    on_progress=on_progress,
                 )
                 detail_ids = {d.id for d in details}
                 for result in bbs_results:
@@ -1063,10 +1174,17 @@ class CrawlerService:
         query: str,
         categories: list[str] | None = None,
         page_limit: int | None = None,
+        on_progress: ProgressCallback = None,
     ) -> list[SearchCard]:
         all_cards = []
         for collection_id in self._resolve_collection_ids(categories):
-            cards = await self._collect_collection_cards(page, query, collection_id, page_limit)
+            cards = await self._collect_collection_cards(
+                page,
+                query,
+                collection_id,
+                page_limit,
+                on_progress=on_progress,
+            )
             all_cards.extend(cards)
 
         deduped = {}
@@ -1082,47 +1200,110 @@ class CrawlerService:
         query: str,
         collection_id: str,
         page_limit: int | None = None,
+        on_progress: ProgressCallback = None,
     ) -> list[SearchCard]:
-        settings = get_settings()
-
+        board_name = self._get_collection_board_name(collection_id)
         await self._go_to_query(page, query)
         await page.evaluate(f"doCollection('{collection_id}')")
+        await self._wait_for_collection_results(page)
 
-        try:
-            await page.wait_for_selector(
-                OLTA_SELECTORS["search"]["result_title_links"],
-                timeout=5000,
+        sub_boards = await self._discover_sub_boards(page)
+        if not sub_boards:
+            await self._emit_collection_progress(
+                on_progress,
+                board_name=board_name,
+                status="collecting",
             )
-        except Exception:
-            await page.wait_for_load_state("domcontentloaded")
-
-        total_count = await self._extract_total_count(page)
-        total_pages = max(1, math.ceil(total_count / 10)) if total_count else 1
-        if page_limit is None:
-            effective_page_limit = total_pages
-        else:
-            effective_page_limit = min(total_pages, page_limit)
+            cards = await self._collect_collection_result_pages(
+                page,
+                query,
+                page_limit,
+                type_label=self._get_collection_type_label(collection_id),
+            )
+            await self._emit_collection_progress(
+                on_progress,
+                board_name=board_name,
+                collected_count=len(cards),
+                status="done",
+            )
+            return cards
 
         cards_by_id: dict[str, SearchCard] = {}
-        for page_index in range(effective_page_limit):
-            if page_index > 0:
-                offset = page_index * 10
-                await page.evaluate(f"doPaging('{offset}')")
-                try:
-                    await page.wait_for_selector(
-                        OLTA_SELECTORS["search"]["result_title_links"],
-                        timeout=5000,
-                    )
-                except Exception:
-                    await page.wait_for_load_state("domcontentloaded")
+        selected_any_sub_board = False
+        for sub_board in sub_boards:
+            sub_board_name = self._clean_text(sub_board.get("label", ""))
+            if not sub_board_name:
+                continue
 
-            page_cards = await self._extract_cards_from_current_page(page, query, page_index)
-            for card in page_cards:
+            sub_board_count = int(sub_board.get("count", -1))
+            if sub_board_count == 0:
+                await self._emit_collection_progress(
+                    on_progress,
+                    board_name=board_name,
+                    sub_board_name=sub_board_name,
+                    skipped=True,
+                    status="skipped",
+                )
+                continue
+
+            await self._emit_collection_progress(
+                on_progress,
+                board_name=board_name,
+                sub_board_name=sub_board_name,
+                status="collecting",
+            )
+            if not await self._select_sub_board(page, sub_board):
+                logger.info(
+                    "Main collection sub-board selection failed: collection=%s sub_board=%s",
+                    collection_id,
+                    sub_board_name,
+                )
+                continue
+
+            selected_any_sub_board = True
+            sub_board_cards = await self._collect_collection_result_pages(
+                page,
+                query,
+                page_limit,
+                type_label=self._get_collection_type_label(collection_id, sub_board_name),
+            )
+            for card in sub_board_cards:
                 existing = cards_by_id.get(card.id)
                 if not existing or card.relevance_score > existing.relevance_score:
                     cards_by_id[card.id] = card
 
-        return list(cards_by_id.values())
+            await self._emit_collection_progress(
+                on_progress,
+                board_name=board_name,
+                sub_board_name=sub_board_name,
+                collected_count=len(sub_board_cards),
+                status="done",
+            )
+
+            await page.evaluate(f"doCollection('{collection_id}')")
+            await self._wait_for_collection_results(page)
+
+        if selected_any_sub_board:
+            return list(cards_by_id.values())
+
+        await self._emit_collection_progress(
+            on_progress,
+            board_name=board_name,
+            status="collecting",
+        )
+        cards = await self._collect_collection_result_pages(
+            page,
+            query,
+            page_limit,
+            type_label=self._get_collection_type_label(collection_id),
+        )
+        await self._emit_collection_progress(
+            on_progress,
+            board_name=board_name,
+            collected_count=len(cards),
+            status="done",
+        )
+        return cards
 
     def _coerce_bbs_board(self, board: BBSBoardDefinition | str) -> BBSBoardDefinition:
         if isinstance(board, BBSBoardDefinition):
@@ -1538,102 +1719,300 @@ class CrawlerService:
                     page_index,
                 )
 
+    # ── BBS bbsId → 게시판 라벨 매핑 (알려진 값) ──
+    _BBS_ID_LABEL_MAP: dict[str, str] = {
+        "BBSMSTR_000000000151": "질의응답",
+        "BBSMSTR_000000000181": "지방세상담",
+        "BBSMSTR_000000000211": "자유게시판",
+        "BBSMSTR_000000000221": "실무자료",
+        "BBSMSTR_000000000011": "공지사항",
+        "BBSMSTR_000000000081": "이용안내 Q&A",
+        "BBSMSTR_000000000214": "시가표준액",
+        "BBSMSTR_000000000261": "참고자료",
+        "BBSMSTR_000000000342": "쟁송사무지원",
+        "BBSMSTR_000000000343": "쟁송사무지원 사례",
+        "BBSMSTR_000000000361": "전국단위사건 알림방",
+        "BBSMSTR_000000000362": "쟁송사무워크숍 자료",
+        "BBSMSTR_000000000371": "쟁송사무지원 신청사례",
+        "BBSMSTR_000000000391": "소통마당",
+        "BBSMSTR100000000001": "기타BBS",
+    }
+
+    _BBS_POPUP_URL_RE = re.compile(
+        r"bbsPopUp\(\s*['\"]([^'\"]+)['\"]",
+    )
+
+    async def _extract_bbs_popup_links(self, page: Page) -> list[dict]:
+        """검색 결과 페이지에서 bbsPopUp(URL) 패턴의 링크를 추출한다."""
+        raw_links = await page.evaluate(
+            """
+            () => {
+                const results = [];
+                document.querySelectorAll('a[onclick*="bbsPopUp"]').forEach((a) => {
+                    const onclick = a.getAttribute('onclick') || '';
+                    const text = (a.textContent || '').replace(/<[^>]*>/g, '').replace(/\\s+/g, ' ').trim();
+                    results.push({ onclick, text });
+                });
+                return results;
+            }
+            """
+        )
+
+        links = []
+        for item in raw_links:
+            onclick = item.get("onclick", "")
+            title = self._clean_text(item.get("text", ""))
+            if not title or len(title) < 3:
+                continue
+
+            # bbsPopUp('https://...selectBoardArticle.do?nttId=...&bbsId=...') 패턴 추출
+            # HTML 엔티티 디코딩
+            onclick_decoded = onclick.replace("&amp;", "&").replace("&#39;", "'").replace("\\'", "'")
+            match = self._BBS_POPUP_URL_RE.search(onclick_decoded)
+            if not match:
+                continue
+
+            url = match.group(1).strip()
+            if not url.startswith("http"):
+                url = urljoin("https://www.olta.re.kr", url)
+
+            # bbsId, nttId 추출
+            bbs_id_match = re.search(r"bbsId=([^&]+)", url)
+            ntt_id_match = re.search(r"nttId=(\d+)", url)
+            bbs_id = bbs_id_match.group(1) if bbs_id_match else ""
+            ntt_id = ntt_id_match.group(1) if ntt_id_match else ""
+
+            board_label = self._BBS_ID_LABEL_MAP.get(bbs_id, bbs_id or "기타BBS")
+
+            links.append({
+                "url": url,
+                "title": title,
+                "bbs_id": bbs_id,
+                "ntt_id": ntt_id,
+                "board_label": board_label,
+            })
+
+        return links
+
+    async def _fetch_bbs_detail_direct(
+        self,
+        auth_context: BrowserContext,
+        url: str,
+        title: str,
+        card_id: str,
+        board_label: str,
+    ) -> CrawlResult | None:
+        """BBS 상세 페이지를 URL로 직접 열어 콘텐츠를 수집한다."""
+        settings = get_settings()
+        detail_page = await auth_context.new_page()
+        detail_page.set_default_timeout(settings.playwright_timeout)
+        try:
+            await detail_page.goto(url, wait_until="domcontentloaded")
+            try:
+                await detail_page.wait_for_load_state(
+                    "networkidle",
+                    timeout=settings.olta_bbs_detail_ready_timeout_ms,
+                )
+            except Exception:
+                pass
+
+            content = await self._extract_bbs_detail_text(detail_page)
+            comments = await self._extract_comments(detail_page)
+
+            if not content or "500 Internal Server error" in content:
+                return None
+
+            full_content = content
+            if comments:
+                full_content += f"\n\n[답변/댓글]\n{comments}"
+
+            preview = content[:180] + "..." if len(content) > 180 else content
+            score = max(0.1, 0.80)
+
+            return CrawlResult(
+                id=card_id,
+                title=title,
+                type=f"기타/{board_label}",
+                content=full_content,
+                preview=preview,
+                url=url,
+                relevance_score=score,
+                document_year=self._extract_document_year(content),
+                comments=comments,
+                crawled_at=datetime.now(),
+            )
+        except Exception:
+            logger.debug("BBS direct fetch failed: url=%s", url, exc_info=True)
+            return None
+        finally:
+            try:
+                await detail_page.close()
+            except Exception:
+                pass
+
     async def _search_all_bbs_boards(
         self,
         auth_context: BrowserContext,
         queries: list[str],
         page: Page | None = None,
+        on_progress: ProgressCallback = None,
     ) -> list[CrawlResult]:
-        """Discover BBS boards, then search each board with BBS-specific collection logic."""
+        """통합 BBS 검색: 전체 검색 후 bbsPopUp(URL) 링크를 추출하여 직접 수집."""
         settings = get_settings()
         if not queries:
             return []
 
-        discovery_page = page
-        if discovery_page is None:
-            discovery_page = await auth_context.new_page()
-        discovery_page.set_default_timeout(settings.playwright_timeout)
-        try:
-            search_url = urljoin(settings.olta_base_url, OLTA_SELECTORS["bbs"]["entry_url"])
-            await self._settle_navigation(discovery_page)
-            await discovery_page.goto(search_url, wait_until="domcontentloaded")
-            await self._wait_for_bbs_refresh(discovery_page)
-            boards = await self._discover_bbs_boards(discovery_page)
-        finally:
-            if page is None:
-                await discovery_page.close()
-
-        active_boards = [board for board in boards if board.enabled]
-        if not active_boards:
-            logger.info("BBS crawl skipped because no boards were available")
-            return []
-
-        if page is not None:
-            all_results: list[CrawlResult] = []
-            total_boards = len(active_boards)
-            for board_index, board in enumerate(active_boards, start=1):
-                logger.info(
-                    "BBS full crawl progress: %d/%d board=%s",
-                    board_index,
-                    total_boards,
-                    board.label,
-                )
-                seen_result_ids: set[str] = set()
-                board_results: list[CrawlResult] = []
-                for query in queries:
-                    results = await self._search_single_bbs_board(
-                        auth_context,
-                        query,
-                        board,
-                        page=page,
-                    )
-                    for result in results:
-                        if result.id in seen_result_ids:
-                            continue
-                        board_results.append(result)
-                        seen_result_ids.add(result.id)
-                logger.info("BBS board crawl complete: %s -> %d results", board.label, len(board_results))
-                all_results.extend(board_results)
-
-            logger.info(
-                "BBS crawl complete with shared page: %d results across %d boards",
-                len(all_results),
-                len(active_boards),
-            )
-            return all_results
-
-        semaphore = asyncio.Semaphore(max(1, settings.olta_bbs_concurrency))
-
-        async def search_board(board: BBSBoardDefinition) -> list[CrawlResult]:
-            async with semaphore:
-                board_results: list[CrawlResult] = []
-                seen_result_ids: set[str] = set()
-                for query in queries:
-                    results = await self._search_single_bbs_board(auth_context, query, board)
-                    for result in results:
-                        if result.id in seen_result_ids:
-                            continue
-                        board_results.append(result)
-                        seen_result_ids.add(result.id)
-                return board_results
-
-        board_results = await asyncio.gather(
-            *(search_board(board) for board in active_boards),
-            return_exceptions=True,
-        )
+        search_page = page
+        owns_page = page is None
+        if owns_page:
+            search_page = await auth_context.new_page()
+        search_page.set_default_timeout(settings.playwright_timeout)
 
         all_results: list[CrawlResult] = []
-        for board, result in zip(active_boards, board_results, strict=False):
-            if isinstance(result, Exception):
-                logger.warning("BBS board crawl failed: %s (%s)", board.label, result)
-                continue
-            logger.info("BBS board crawl complete: %s -> %d results", board.label, len(result))
-            all_results.extend(result)
+        seen_ids: set[str] = set()
+        # 게시판별 수집 카운트 (progress 보고용)
+        board_counts: dict[str, int] = {}
+
+        try:
+            search_url = urljoin(settings.olta_base_url, OLTA_SELECTORS["bbs"]["entry_url"])
+            max_pages = settings.olta_bbs_max_pages_per_board * 3  # 통합 검색이므로 더 많은 페이지
+
+            for query in queries:
+                # 검색 페이지로 이동 + 검색 실행 (게시판 필터 없이)
+                await self._settle_navigation(search_page)
+                if search_page.is_closed():
+                    if owns_page:
+                        search_page = await auth_context.new_page()
+                        search_page.set_default_timeout(settings.playwright_timeout)
+                    else:
+                        logger.warning("BBS shared search page closed, aborting")
+                        break
+
+                await search_page.goto(search_url, wait_until="domcontentloaded")
+                await self._wait_for_bbs_refresh(search_page)
+                await search_page.fill(OLTA_SELECTORS["bbs"]["search_input"], query)
+
+                # doSearchPu()는 form submit → 페이지 reload이므로
+                # expect_navigation으로 감싸서 네비게이션 완료를 대기
+                try:
+                    async with search_page.expect_navigation(
+                        wait_until="domcontentloaded", timeout=15000,
+                    ):
+                        await search_page.evaluate(OLTA_SELECTORS["bbs"]["search_button_js"])
+                except Exception:
+                    # 이미 네비게이션이 끝났거나 타임아웃
+                    pass
+                await self._wait_for_bbs_refresh(search_page)
+
+                logger.info("BBS unified search started: query=%s url=%s", query, search_page.url)
+
+                # 여러 페이지를 순회하며 bbsPopUp 링크 수집
+                collected_links: list[dict] = []
+                for page_index in range(max_pages):
+                    if page_index > 0:
+                        try:
+                            async with search_page.expect_navigation(
+                                wait_until="domcontentloaded", timeout=10000,
+                            ):
+                                await search_page.evaluate(
+                                    "(v) => doPaging(String(v))", page_index * 10,
+                                )
+                        except Exception:
+                            pass
+                        await self._wait_for_bbs_refresh(search_page)
+
+                    page_links = await self._extract_bbs_popup_links(search_page)
+                    if not page_links:
+                        logger.info(
+                            "BBS page %d has no bbsPopUp links, stopping pagination",
+                            page_index + 1,
+                        )
+                        break
+
+                    new_count = 0
+                    for link in page_links:
+                        ntt_id = link.get("ntt_id", "")
+                        bbs_id = link.get("bbs_id", "")
+                        card_id = (
+                            f"olta_bbs_{bbs_id}_{ntt_id}" if bbs_id and ntt_id
+                            else f"olta_bbs_{ntt_id}" if ntt_id
+                            else f"olta_bbs_{hash(link['url'])}"
+                        )
+                        if card_id not in seen_ids:
+                            link["card_id"] = card_id
+                            collected_links.append(link)
+                            seen_ids.add(card_id)
+                            new_count += 1
+
+                    logger.info(
+                        "BBS page %d: %d bbsPopUp links found, %d new",
+                        page_index + 1,
+                        len(page_links),
+                        new_count,
+                    )
+
+                logger.info(
+                    "BBS unified search complete: query=%s total_links=%d",
+                    query,
+                    len(collected_links),
+                )
+
+                # 수집된 링크에서 상세 페이지 수집
+                # 게시판별로 그룹핑하여 progress 보고
+                boards_in_links: dict[str, list[dict]] = {}
+                for link in collected_links:
+                    bl = link.get("board_label", "기타BBS")
+                    boards_in_links.setdefault(bl, []).append(link)
+
+                for board_label, links in boards_in_links.items():
+                    await self._emit_collection_progress(
+                        on_progress,
+                        board_name="기타",
+                        sub_board_name=board_label,
+                        status="collecting",
+                    )
+
+                    board_result_count = 0
+                    for link in links:
+                        result = await self._fetch_bbs_detail_direct(
+                            auth_context,
+                            link["url"],
+                            link["title"],
+                            link["card_id"],
+                            board_label,
+                        )
+                        if result:
+                            all_results.append(result)
+                            board_result_count += 1
+
+                    board_counts[board_label] = board_counts.get(board_label, 0) + board_result_count
+                    await self._emit_collection_progress(
+                        on_progress,
+                        board_name="기타",
+                        sub_board_name=board_label,
+                        collected_count=board_counts[board_label],
+                        skipped=board_counts[board_label] == 0,
+                        status="done" if board_counts[board_label] > 0 else "skipped",
+                    )
+                    logger.info(
+                        "BBS board fetch complete: %s -> %d results",
+                        board_label,
+                        board_result_count,
+                    )
+
+        except Exception:
+            logger.warning("BBS unified search failed", exc_info=True)
+        finally:
+            if owns_page:
+                try:
+                    await search_page.close()
+                except Exception:
+                    pass
 
         logger.info(
-            "BBS crawl complete: %d results across %d boards",
+            "BBS crawl complete: %d results, boards=%s",
             len(all_results),
-            len(active_boards),
+            {k: v for k, v in board_counts.items() if v > 0},
         )
         return all_results
 
@@ -1967,6 +2346,7 @@ class CrawlerService:
         page: Page,
         query: str,
         page_index: int,
+        type_override: str | None = None,
     ) -> list[SearchCard]:
         raw_cards = await page.locator(OLTA_SELECTORS["search"]["result_title_links"]).evaluate_all(
             """(links) => links.map((link) => {
@@ -1984,7 +2364,13 @@ class CrawlerService:
         cards = []
         seen = set()
         for position, raw_card in enumerate(raw_cards, start=1):
-            card = self._build_search_card(raw_card, query, position, page_index)
+            card = self._build_search_card(
+                raw_card,
+                query,
+                position,
+                page_index,
+                type_override=type_override,
+            )
             if not card or card.id in seen:
                 continue
             seen.add(card.id)
@@ -1997,6 +2383,7 @@ class CrawlerService:
         query: str,
         position: int,
         page_index: int,
+        type_override: str | None = None,
     ) -> SearchCard | None:
         onclick = raw_card.get("onclick", "")
         match = re.search(r"javascript:(\w+)\((.*?)\)", onclick)
@@ -2028,6 +2415,7 @@ class CrawlerService:
             return None
 
         type_label = POPUP_TYPE_MAP.get(popup_name, "기타")
+        resolved_type_label = type_override or type_label
         score = max(0.1, 1.0 - ((position - 1) * 0.04) - (page_index * 0.03))
         document_year = self._extract_document_year(
             " ".join(
@@ -2043,7 +2431,7 @@ class CrawlerService:
             id=f"olta_{popup_name}_{base_identifier}",
             title=self._clean_text(raw_card.get("title", "")),
             preview=self._clean_text(raw_card.get("preview", "")),
-            type=type_label,
+            type=resolved_type_label,
             meta=self._clean_text(raw_card.get("meta", "")),
             detail_url=detail_url,
             relevance_score=score,
@@ -2224,6 +2612,384 @@ class CrawlerService:
             collection_ids.extend(COLLECTION_IDS.get(category, []))
         return list(dict.fromkeys(collection_ids)) or DEFAULT_COLLECTION_IDS
 
+    def _get_collection_board_name(self, collection_id: str) -> str:
+        popup_name = COLLECTION_POPUP_MAP.get(collection_id)
+        return POPUP_TYPE_MAP.get(popup_name, collection_id)
+
+    def _get_collection_type_label(
+        self,
+        collection_id: str,
+        sub_board_name: str | None = None,
+    ) -> str:
+        board_name = self._get_collection_board_name(collection_id)
+        cleaned_sub_board_name = self._clean_text(sub_board_name or "")
+        if cleaned_sub_board_name:
+            return f"{board_name}/{cleaned_sub_board_name}"
+        return board_name
+
+    async def _emit_collection_progress(
+        self,
+        on_progress: ProgressCallback,
+        *,
+        board_name: str,
+        sub_board_name: str | None = None,
+        collected_count: int = 0,
+        skipped: bool = False,
+        status: str = "pending",
+    ) -> None:
+        if on_progress is None:
+            return
+
+        await on_progress(
+            BoardCollectionStat(
+                board_name=board_name,
+                sub_board_name=sub_board_name,
+                collected_count=collected_count,
+                skipped=skipped,
+                status=status,
+            )
+        )
+
+    async def _wait_for_collection_results(self, page: Page) -> None:
+        try:
+            await page.wait_for_selector(
+                OLTA_SELECTORS["search"]["result_title_links"],
+                timeout=5000,
+            )
+        except Exception:
+            try:
+                await page.wait_for_load_state("domcontentloaded")
+            except Exception:
+                pass
+        await asyncio.sleep(0.2)
+
+    async def _discover_sub_boards(self, page: Page) -> list[dict]:
+        sub_board_selectors = OLTA_SELECTORS["search"].get("sub_board", {})
+        tab_container_selectors = sub_board_selectors.get("tab_container_selectors", [])
+        tab_link_selectors = sub_board_selectors.get("tab_link_selectors", [])
+        count_selectors = sub_board_selectors.get("count_selectors", [])
+        known_labels = sub_board_selectors.get("known_labels", [])
+
+        try:
+            raw_sub_boards = await page.evaluate(
+                """
+                ({ tabContainerSelectors, tabLinkSelectors, countSelectors, knownLabels }) => {
+                    const normalize = (value) => (value || '').replace(/\\s+/g, ' ').trim()
+                    const extractCount = (node, text) => {
+                        const texts = [text]
+                        for (const selector of countSelectors) {
+                            try {
+                                node.querySelectorAll(selector).forEach((child) => {
+                                    texts.push(normalize(child.textContent || child.innerText || ''))
+                                })
+                            } catch (error) {
+                                // ignore selector failures in discovery mode
+                            }
+                        }
+
+                        for (const source of texts) {
+                            const normalized = normalize(source)
+                            const match =
+                                normalized.match(/\\((\\d[\\d,]*)\\)/) ||
+                                normalized.match(/총\\s*(\\d[\\d,]*)\\s*건/i) ||
+                                normalized.match(/(\\d[\\d,]*)\\s*건/i)
+                            if (match) {
+                                return Number((match[1] || '').replace(/,/g, ''))
+                            }
+                        }
+
+                        return null
+                    }
+
+                    const toLabel = (text) => {
+                        const stripped = normalize(
+                            text
+                                .replace(/\\(\\s*\\d[\\d,]*\\s*\\)/g, ' ')
+                                .replace(/총\\s*\\d[\\d,]*\\s*건/gi, ' ')
+                                .replace(/\\d[\\d,]*\\s*건/gi, ' ')
+                                .replace(/\\b\\d[\\d,]*\\b/g, ' ')
+                                .replace(/[|/]+/g, ' ')
+                        )
+                        const matchedKnown = knownLabels.find((label) => stripped.includes(label))
+                        return matchedKnown || stripped
+                    }
+
+                    const containers = []
+                    for (const selector of tabContainerSelectors) {
+                        document.querySelectorAll(selector).forEach((node) => containers.push(node))
+                    }
+                    if (!containers.length) {
+                        return []
+                    }
+
+                    const candidates = []
+                    const seen = new Set()
+                    const genericSelectors = ['a[onclick]', 'button[onclick]', 'li[onclick]', 'a', 'button']
+
+                    for (const container of containers) {
+                        const nodes = []
+                        const nodeSet = new Set()
+                        for (const selector of tabLinkSelectors) {
+                            try {
+                                container.querySelectorAll(selector).forEach((node) => {
+                                    if (!nodeSet.has(node)) {
+                                        nodeSet.add(node)
+                                        nodes.push(node)
+                                    }
+                                })
+                            } catch (error) {
+                                // ignore selector failures in discovery mode
+                            }
+                        }
+                        if (!nodes.length) {
+                            for (const selector of genericSelectors) {
+                                try {
+                                    container.querySelectorAll(selector).forEach((node) => {
+                                        if (!nodeSet.has(node)) {
+                                            nodeSet.add(node)
+                                            nodes.push(node)
+                                        }
+                                    })
+                                } catch (error) {
+                                    // ignore selector failures in discovery mode
+                                }
+                            }
+                        }
+
+                        for (const node of nodes) {
+                            const text = normalize(node.textContent || node.innerText || '')
+                            const onclick = node.getAttribute('onclick') || ''
+                            const href = node.getAttribute('href') || ''
+                            if (!text || text.length > 60) {
+                                continue
+                            }
+                            if (/doCollection\\(/i.test(onclick)) {
+                                continue
+                            }
+                            if (/검색|조회|닫기|열기|더보기|다음|이전|목록/i.test(text)) {
+                                continue
+                            }
+
+                            const label = toLabel(text)
+                            const count = extractCount(node, text)
+                            const hasAction = Boolean(onclick || href)
+                            const matchedKnown = knownLabels.some((knownLabel) => label.includes(knownLabel))
+                            if (!label || label.length < 2) {
+                                continue
+                            }
+                            if (count === null && !hasAction && !matchedKnown) {
+                                continue
+                            }
+
+                            const key = `${label}::${onclick}::${href}`
+                            if (seen.has(key)) {
+                                continue
+                            }
+                            seen.add(key)
+                            candidates.push({
+                                label,
+                                count: count === null ? -1 : count,
+                                onclick,
+                                href,
+                                element_index: candidates.length,
+                            })
+                        }
+                    }
+
+                    return candidates
+                }
+                """,
+                {
+                    "tabContainerSelectors": tab_container_selectors,
+                    "tabLinkSelectors": tab_link_selectors,
+                    "countSelectors": count_selectors,
+                    "knownLabels": known_labels,
+                },
+            )
+        except Exception:
+            logger.debug("Main collection sub-board discovery failed", exc_info=True)
+            return []
+
+        filtered_sub_boards: list[dict] = []
+        seen_labels: set[str] = set()
+        blocked_labels = {
+            self._clean_text(label)
+            for label in ("전체", "검색", "조회", "닫기", "열기", "더보기", "다음", "이전", "목록")
+        }
+        for sub_board in raw_sub_boards:
+            label = self._clean_text(sub_board.get("label", ""))
+            if not label or label in blocked_labels or label in seen_labels:
+                continue
+            seen_labels.add(label)
+            filtered_sub_boards.append(
+                {
+                    "label": label,
+                    "count": int(sub_board.get("count", -1)),
+                    "onclick": sub_board.get("onclick", ""),
+                    "href": sub_board.get("href", ""),
+                    "element_index": int(sub_board.get("element_index", len(filtered_sub_boards))),
+                }
+            )
+        return filtered_sub_boards
+
+    async def _select_sub_board(self, page: Page, sub_board: dict) -> bool:
+        sub_board_selectors = OLTA_SELECTORS["search"].get("sub_board", {})
+        tab_container_selectors = sub_board_selectors.get("tab_container_selectors", [])
+        tab_link_selectors = sub_board_selectors.get("tab_link_selectors", [])
+        target = {
+            "label": self._clean_text(sub_board.get("label", "")),
+            "onclick": sub_board.get("onclick", ""),
+            "href": sub_board.get("href", ""),
+            "element_index": int(sub_board.get("element_index", 0)),
+        }
+
+        clicked = False
+        try:
+            clicked = await page.evaluate(
+                """
+                ({ target, tabContainerSelectors, tabLinkSelectors }) => {
+                    const normalize = (value) => (value || '').replace(/\\s+/g, ' ').trim()
+                    const toLabel = (text) => normalize(
+                        text
+                            .replace(/\\(\\s*\\d[\\d,]*\\s*\\)/g, ' ')
+                            .replace(/총\\s*\\d[\\d,]*\\s*건/gi, ' ')
+                            .replace(/\\d[\\d,]*\\s*건/gi, ' ')
+                            .replace(/\\b\\d[\\d,]*\\b/g, ' ')
+                    )
+                    const containers = []
+                    for (const selector of tabContainerSelectors) {
+                        document.querySelectorAll(selector).forEach((node) => containers.push(node))
+                    }
+                    const genericSelectors = ['a[onclick]', 'button[onclick]', 'li[onclick]', 'a', 'button']
+                    const candidates = []
+                    const seen = new Set()
+
+                    for (const container of containers) {
+                        const nodes = []
+                        const nodeSet = new Set()
+                        for (const selector of tabLinkSelectors) {
+                            try {
+                                container.querySelectorAll(selector).forEach((node) => {
+                                    if (!nodeSet.has(node)) {
+                                        nodeSet.add(node)
+                                        nodes.push(node)
+                                    }
+                                })
+                            } catch (error) {
+                                // ignore selector failures
+                            }
+                        }
+                        if (!nodes.length) {
+                            for (const selector of genericSelectors) {
+                                try {
+                                    container.querySelectorAll(selector).forEach((node) => {
+                                        if (!nodeSet.has(node)) {
+                                            nodeSet.add(node)
+                                            nodes.push(node)
+                                        }
+                                    })
+                                } catch (error) {
+                                    // ignore selector failures
+                                }
+                            }
+                        }
+
+                        for (const node of nodes) {
+                            const label = toLabel(node.textContent || node.innerText || '')
+                            const onclick = node.getAttribute('onclick') || ''
+                            const href = node.getAttribute('href') || ''
+                            const key = `${label}::${onclick}::${href}`
+                            if (!label || seen.has(key)) {
+                                continue
+                            }
+                            seen.add(key)
+                            candidates.push({ node, label, onclick, href, element_index: candidates.length })
+                        }
+                    }
+
+                    const candidate =
+                        candidates.find((item) =>
+                            item.label === target.label &&
+                            item.onclick === target.onclick &&
+                            item.href === target.href
+                        ) ||
+                        candidates.find((item) => item.label === target.label && item.element_index === target.element_index) ||
+                        candidates.find((item) => item.label === target.label)
+
+                    if (!candidate) {
+                        return false
+                    }
+
+                    if (typeof candidate.node.click === 'function') {
+                        candidate.node.click()
+                    } else {
+                        candidate.node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+                    }
+                    return true
+                }
+                """,
+                {
+                    "target": target,
+                    "tabContainerSelectors": tab_container_selectors,
+                    "tabLinkSelectors": tab_link_selectors,
+                },
+            )
+        except Exception:
+            logger.debug("Main collection sub-board click failed via DOM lookup", exc_info=True)
+
+        if not clicked:
+            raw_action = sub_board.get("onclick") or sub_board.get("href") or ""
+            if raw_action.lower().startswith("javascript:"):
+                raw_action = raw_action[len("javascript:") :]
+            raw_action = raw_action.strip().rstrip(";")
+            if raw_action:
+                try:
+                    await page.evaluate(raw_action)
+                    clicked = True
+                except Exception:
+                    logger.debug("Main collection sub-board click failed via JS action", exc_info=True)
+
+        if not clicked:
+            return False
+
+        await self._wait_for_collection_results(page)
+        return True
+
+    async def _collect_collection_result_pages(
+        self,
+        page: Page,
+        query: str,
+        page_limit: int | None,
+        *,
+        type_label: str | None = None,
+    ) -> list[SearchCard]:
+        total_count = await self._extract_total_count(page)
+        total_pages = max(1, math.ceil(total_count / 10)) if total_count else 1
+        if page_limit is None:
+            effective_page_limit = total_pages
+        else:
+            effective_page_limit = min(total_pages, page_limit)
+
+        cards_by_id: dict[str, SearchCard] = {}
+        for page_index in range(effective_page_limit):
+            if page_index > 0:
+                offset = page_index * 10
+                await page.evaluate(f"doPaging('{offset}')")
+                await self._wait_for_collection_results(page)
+
+            page_cards = await self._extract_cards_from_current_page(
+                page,
+                query,
+                page_index,
+                type_override=type_label,
+            )
+            for card in page_cards:
+                existing = cards_by_id.get(card.id)
+                if not existing or card.relevance_score > existing.relevance_score:
+                    cards_by_id[card.id] = card
+
+        return list(cards_by_id.values())
+
     async def _extract_total_count(self, page: Page) -> int:
         body = await page.locator("body").inner_text()
         match = re.search(r"\(총\s*([\d,]+)건\)", body)
@@ -2242,6 +3008,330 @@ class CrawlerService:
         if not valid_years:
             return None
         return max(valid_years)
+
+    async def _discover_sub_boards(self, page: Page) -> list[dict]:
+        sub_board_selectors = OLTA_SELECTORS["search"].get("sub_board", {})
+        tab_container_selectors = sub_board_selectors.get("tab_container_selectors", [])
+        tab_link_selectors = sub_board_selectors.get("tab_link_selectors", [])
+        count_selectors = sub_board_selectors.get("count_selectors", [])
+        known_labels = sub_board_selectors.get("known_labels", [])
+
+        try:
+            raw_sub_boards = await page.evaluate(
+                """
+                ({ tabContainerSelectors, tabLinkSelectors, countSelectors, knownLabels }) => {
+                    const normalize = (value) => (value || '').replace(/\\s+/g, ' ').trim()
+                    const stripCountText = (value) => normalize(
+                        (value || '')
+                            .replace(/\\(\\s*\\d[\\d,]*\\s*\\)/g, ' ')
+                            .replace(/\\b\\d[\\d,]*\\b/g, ' ')
+                            .replace(/[|/]+/g, ' ')
+                    )
+                    const extractCount = (node, text) => {
+                        const texts = [text]
+                        for (const selector of countSelectors) {
+                            try {
+                                node.querySelectorAll(selector).forEach((child) => {
+                                    texts.push(normalize(child.textContent || child.innerText || ''))
+                                })
+                            } catch (error) {
+                                // ignore selector failures in discovery mode
+                            }
+                        }
+
+                        for (const source of texts) {
+                            const normalized = normalize(source)
+                            const match = normalized.match(/\\((\\d[\\d,]*)\\)/) || normalized.match(/(\\d[\\d,]*)/)
+                            if (match) {
+                                return Number((match[1] || '').replace(/,/g, ''))
+                            }
+                        }
+
+                        return null
+                    }
+
+                    const containers = []
+                    const containerSet = new Set()
+                    for (const selector of tabContainerSelectors) {
+                        document.querySelectorAll(selector).forEach((node) => {
+                            if (!containerSet.has(node)) {
+                                containerSet.add(node)
+                                containers.push(node)
+                            }
+                        })
+                    }
+                    if (!containers.length) {
+                        return []
+                    }
+
+                    const candidates = []
+                    const seen = new Set()
+                    const genericSelectors = ['a[onclick]', 'button[onclick]', 'li[onclick]', 'a', 'button']
+
+                    for (const container of containers) {
+                        const nodes = []
+                        const nodeSet = new Set()
+                        for (const selector of tabLinkSelectors) {
+                            try {
+                                container.querySelectorAll(selector).forEach((node) => {
+                                    if (!nodeSet.has(node)) {
+                                        nodeSet.add(node)
+                                        nodes.push(node)
+                                    }
+                                })
+                            } catch (error) {
+                                // ignore selector failures in discovery mode
+                            }
+                        }
+
+                        if (!nodes.length) {
+                            for (const selector of genericSelectors) {
+                                try {
+                                    container.querySelectorAll(selector).forEach((node) => {
+                                        if (!nodeSet.has(node)) {
+                                            nodeSet.add(node)
+                                            nodes.push(node)
+                                        }
+                                    })
+                                } catch (error) {
+                                    // ignore selector failures in discovery mode
+                                }
+                            }
+                        }
+
+                        for (const node of nodes) {
+                            const text = normalize(node.textContent || node.innerText || '')
+                            const onclick = node.getAttribute('onclick') || ''
+                            const href = node.getAttribute('href') || ''
+                            if (!text || text.length > 60) {
+                                continue
+                            }
+                            if (/doCollection\\(/i.test(onclick)) {
+                                continue
+                            }
+
+                            const label = stripCountText(text)
+                            const count = extractCount(node, text)
+                            const hasAction = Boolean(onclick || href)
+                            const matchedKnown = knownLabels.some((knownLabel) => label.includes(knownLabel))
+                            if (!label || label.length < 2) {
+                                continue
+                            }
+                            if (count === null && !hasAction && !matchedKnown) {
+                                continue
+                            }
+
+                            const key = `${label}::${onclick}::${href}`
+                            if (seen.has(key)) {
+                                continue
+                            }
+                            seen.add(key)
+                            candidates.push({
+                                label,
+                                count: count === null ? -1 : count,
+                                onclick,
+                                href,
+                                element_index: candidates.length,
+                            })
+                        }
+                    }
+
+                    return candidates
+                }
+                """,
+                {
+                    "tabContainerSelectors": tab_container_selectors,
+                    "tabLinkSelectors": tab_link_selectors,
+                    "countSelectors": count_selectors,
+                    "knownLabels": known_labels,
+                },
+            )
+        except Exception:
+            logger.debug("Main collection sub-board discovery failed", exc_info=True)
+            return []
+
+        cleaned_known_labels = [
+            self._clean_text(label)
+            for label in known_labels
+            if self._clean_text(label)
+        ]
+        filtered_sub_boards: list[dict] = []
+        seen_labels: set[str] = set()
+        blocked_ascii_labels = {
+            "all",
+            "select",
+            "search",
+            "close",
+            "open",
+            "more",
+            "next",
+            "prev",
+            "previous",
+            "list",
+        }
+
+        for sub_board in raw_sub_boards:
+            label = self._clean_text(sub_board.get("label", ""))
+            normalized_label = self._normalize_bbs_label(label)
+            ascii_label = re.sub(r"[^a-z0-9]+", "", label.casefold())
+            if not label or not normalized_label or normalized_label in seen_labels:
+                continue
+            if ascii_label and ascii_label in blocked_ascii_labels:
+                continue
+
+            seen_labels.add(normalized_label)
+            filtered_sub_boards.append(
+                {
+                    "label": label,
+                    "count": int(sub_board.get("count", -1)),
+                    "onclick": sub_board.get("onclick", ""),
+                    "href": sub_board.get("href", ""),
+                    "element_index": int(sub_board.get("element_index", len(filtered_sub_boards))),
+                    "matches_known_label": any(
+                        known_label in label for known_label in cleaned_known_labels
+                    ),
+                }
+            )
+
+        if any(sub_board["matches_known_label"] for sub_board in filtered_sub_boards):
+            filtered_sub_boards = [
+                sub_board for sub_board in filtered_sub_boards if sub_board["matches_known_label"]
+            ]
+
+        for sub_board in filtered_sub_boards:
+            sub_board.pop("matches_known_label", None)
+
+        return filtered_sub_boards
+
+    async def _select_sub_board(self, page: Page, sub_board: dict) -> bool:
+        sub_board_selectors = OLTA_SELECTORS["search"].get("sub_board", {})
+        tab_container_selectors = sub_board_selectors.get("tab_container_selectors", [])
+        tab_link_selectors = sub_board_selectors.get("tab_link_selectors", [])
+        target = {
+            "label": self._clean_text(sub_board.get("label", "")),
+            "onclick": sub_board.get("onclick", ""),
+            "href": sub_board.get("href", ""),
+            "element_index": int(sub_board.get("element_index", 0)),
+        }
+
+        clicked = False
+        try:
+            clicked = await page.evaluate(
+                """
+                ({ target, tabContainerSelectors, tabLinkSelectors }) => {
+                    const normalize = (value) => (value || '').replace(/\\s+/g, ' ').trim()
+                    const stripCountText = (value) => normalize(
+                        (value || '')
+                            .replace(/\\(\\s*\\d[\\d,]*\\s*\\)/g, ' ')
+                            .replace(/\\b\\d[\\d,]*\\b/g, ' ')
+                            .replace(/[|/]+/g, ' ')
+                    )
+                    const containers = []
+                    const containerSet = new Set()
+                    for (const selector of tabContainerSelectors) {
+                        document.querySelectorAll(selector).forEach((node) => {
+                            if (!containerSet.has(node)) {
+                                containerSet.add(node)
+                                containers.push(node)
+                            }
+                        })
+                    }
+
+                    const genericSelectors = ['a[onclick]', 'button[onclick]', 'li[onclick]', 'a', 'button']
+                    const candidates = []
+                    const seen = new Set()
+
+                    for (const container of containers) {
+                        const nodes = []
+                        const nodeSet = new Set()
+                        for (const selector of tabLinkSelectors) {
+                            try {
+                                container.querySelectorAll(selector).forEach((node) => {
+                                    if (!nodeSet.has(node)) {
+                                        nodeSet.add(node)
+                                        nodes.push(node)
+                                    }
+                                })
+                            } catch (error) {
+                                // ignore selector failures
+                            }
+                        }
+
+                        if (!nodes.length) {
+                            for (const selector of genericSelectors) {
+                                try {
+                                    container.querySelectorAll(selector).forEach((node) => {
+                                        if (!nodeSet.has(node)) {
+                                            nodeSet.add(node)
+                                            nodes.push(node)
+                                        }
+                                    })
+                                } catch (error) {
+                                    // ignore selector failures
+                                }
+                            }
+                        }
+
+                        for (const node of nodes) {
+                            const label = stripCountText(node.textContent || node.innerText || '')
+                            const onclick = node.getAttribute('onclick') || ''
+                            const href = node.getAttribute('href') || ''
+                            const key = `${label}::${onclick}::${href}`
+                            if (!label || seen.has(key)) {
+                                continue
+                            }
+                            seen.add(key)
+                            candidates.push({ node, label, onclick, href, element_index: candidates.length })
+                        }
+                    }
+
+                    const candidate =
+                        candidates.find((item) =>
+                            item.label === target.label &&
+                            item.onclick === target.onclick &&
+                            item.href === target.href
+                        ) ||
+                        candidates.find((item) => item.label === target.label && item.element_index === target.element_index) ||
+                        candidates.find((item) => item.label === target.label)
+
+                    if (!candidate) {
+                        return false
+                    }
+
+                    if (typeof candidate.node.click === 'function') {
+                        candidate.node.click()
+                    } else {
+                        candidate.node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+                    }
+                    return true
+                }
+                """,
+                {
+                    "target": target,
+                    "tabContainerSelectors": tab_container_selectors,
+                    "tabLinkSelectors": tab_link_selectors,
+                },
+            )
+        except Exception:
+            logger.debug("Main collection sub-board click failed via DOM lookup", exc_info=True)
+
+        if not clicked:
+            raw_action = sub_board.get("onclick") or sub_board.get("href") or ""
+            if raw_action.lower().startswith("javascript:"):
+                raw_action = raw_action[len("javascript:") :]
+            raw_action = raw_action.strip().rstrip(";")
+            if raw_action:
+                try:
+                    await page.evaluate(raw_action)
+                    clicked = True
+                except Exception:
+                    logger.debug("Main collection sub-board click failed via JS action", exc_info=True)
+
+        if not clicked:
+            return False
+
+        await self._wait_for_collection_results(page)
+        return True
 
     def _clean_text(self, value: str) -> str:
         without_tags = re.sub(r"<[^>]+>", " ", value or "")

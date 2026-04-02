@@ -1,0 +1,162 @@
+[
+  {
+    "name": "getScreenDetails",
+    "source_preview": "function getScreenDetails() { [native code] }"
+  },
+  {
+    "name": "popup",
+    "source_preview": "function popup(url, name, w, h){\r\n\twindow.open(url, name, 'width='+w+', height='+h+', scrollbars=no, status=0, resize=no');\r\n}"
+  },
+  {
+    "name": "popup_size",
+    "source_preview": "function popup_size(){\r\n\tif(!$(\"#wrap_pop\").length > 0) return false;\r\n\tvar win_h = $(window).height();\r\n\tif(win_h  < 800 ){\r\n\t\t$('#wrap_pop').css('height',win_h);\r\n\t\t$('#wrap_pop').css('overflow-y','scroll');\r\n\t}\r\n}"
+  },
+  {
+    "name": "search_opt",
+    "source_preview": "function search_opt(){\r\n\tif(!$(\".search_box\").length > 0) return false;\r\n\t$('.search_box .btn_open a').click(function(){\r\n\t\t//검색어 입력, 사건번호, 사건명 등 체크박스가 닫히면 입력했던 내용도 삭제해준다.\r\n\t\t$('#srchWrd').val('');\r\n\t\t$('input:checkbox[id=\"caseNoChk\"]').attr('checked',false);\r\n\t\t$('input:checkbox[id=\"caseNmChk\"]').a"
+  },
+  {
+    "name": "search_rank",
+    "source_preview": "function search_rank(){\r\n\tif(!$('.m_lank_list').length){return false};\r\n\tvar ticker = function()   {\r\n        setTimeout(function(){\r\n            $('.m_lank_list li:first').animate({marginTop: '-22px'}, 100, function()  {\r\n                $(this).removeClass(\"on\").detach().appendTo('.m_lank_list ul'"
+  },
+  {
+    "name": "detail_link",
+    "source_preview": "function detail_link(){\r\n\tif(!$(\".detail_btns\").length > 0) return false;//css('border','solid 1px red');\r\n\tif(!$('.detail_part').hasClass('active')){\r\n\t\t$('.header .link').addClass('type2');\r\n\t}\r\n\r\n\t$('.detail_part.detail_3').addClass('act');\r\n\t$('.detail_0_1, .detail_0_2').hide();\r\n//\t$('.detail_p"
+  },
+  {
+    "name": "detail_num",
+    "source_preview": "function detail_num(num, num2){\r\n\t$('.detail_btns').removeClass('active');\r\n\tvar num = $('.detail_part').not(':hidden').length - 1;\r\n\t$('.detail_part').removeClass('active');\r\n\t$('.detail_conts').removeClass('step_type01');\r\n\t$('.detail_conts').removeClass('step_type02');\r\n\t$('.detail_conts').remove"
+  },
+  {
+    "name": "fn_egov_downFile",
+    "source_preview": "function fn_egov_downFile(atchFileId, fileSn){\r\n\twindow.open(\"/cmm/fms/FileDown.do?atchFileId=\" + atchFileId + \"&fileSn=\" + fileSn);\r\n}"
+  },
+  {
+    "name": "lawDtlpopUp",
+    "source_preview": "function lawDtlpopUp(num, type, relNum) {\r\n\r\n\tvar srchWrd = \"\";\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\r\n\tif(screen.width < 800){\r\n\t\twdt = \"800px\";\r\n\t\thgt = \"600px\";\r\n\t}else{\r\n\t\twdt = \"1080px\";\r\n\t\thgt = \"820px\";\r\n\t}\r\n\r\n\tif(type == 10000){\r\n\t\twindow.open(\"/explainInfo/detailView/decisi"
+  },
+  {
+    "name": "goBBSLink",
+    "source_preview": "function goBBSLink(bbsId, nttId, menuId, upperMenuId) {\r\n\r\n\tif(bbsId == 'CMUNITY_000000000002'){\r\n\t\twindow.open(\"/mypage/partCmtDetail.do?partSeq=\" + nttId + \"&upperMenuId=13070000&menuNo=13070100\",'_blank');\r\n\t}else{\r\n\t\twindow.open(\"/cop/bbs/selectBoardArticle.do?bbsId=\" + bbsId + \"&nttId=\" + nttId"
+  },
+  {
+    "name": "checkFormResearch",
+    "source_preview": "function checkFormResearch(f) {\r\n\t\tvar fObj;\t// 폼 요소\r\n\t\tvar fOId;\t// 폼 ID 이름\r\n\t\tvar fTyp;\t// 폼 요소 Type\r\n\t\tvar fVal;\t// 폼 요소 Value\r\n\t\tvar fMsg;\t// 경고 메시지 속성\r\n\r\n\t\tvar rtnV    = true;\t\t\r\n\t\tvar saveId  = \"\";\r\n\r\n\t\t$(\"#\"+f+\" input:radio, #\"+f+\" textarea\").each(function(){ \r\n\t\t\tfObj\t= $(this);\r\n\t\t\tfOId\t= $"
+  },
+  {
+    "name": "checkSearchChar",
+    "source_preview": "function checkSearchChar(str){\r\n\t\tvar reg1 = /^[\\uac00-\\ud7a3]*$/;\r\n\t\tvar reg2 = /^[a-zA-Z0-9]+$/;\r\n\t\treturn (reg1.test(str) || reg2.test(str));\r\n\t}"
+  },
+  {
+    "name": "searchConditionClean",
+    "source_preview": "function searchConditionClean(_form){\r\n\tvar searchForm = _form;\r\n\t\r\n\t\r\n\tsearchForm.searchType.value = \"1\";\t\t// 1:통합검색, 2:문서번호검색\r\n\tsearchForm.collection.value = \"ALL\";\r\n\tsearchForm.startDate.value = \"\";\r\n\tsearchForm.endDate.value = \"\";\r\n\tsearchForm.startCount.value = 0;\r\n\tsearchForm.searchField.value"
+  },
+  {
+    "name": "doSearch",
+    "source_preview": "function doSearch() {\r\n\t\r\n\tif ($(\"#query\").val() == \"\") {\r\n\t\talert(\"검색어를 입력하세요.\");\r\n\t\t$(\"#query\").focus();\r\n\t\treturn;\r\n\t}\r\n\t\r\n\tvar searchForm = document.search; \r\n\tsearchConditionClean(searchForm);\r\n\t\r\n\t\r\n\tsearchForm.query.value=$(\"#query\").val();\r\n\tsearchForm.searchType.value=$(\"#searchTypeSel\").va"
+  },
+  {
+    "name": "doSearchPu",
+    "source_preview": "function doSearchPu() {\r\n\t\r\n\tif ($(\"#queryPu\").val() == \"\") {\r\n\t\talert(\"검색어를 입력하세요.\");\r\n\t\t$(\"#queryPu\").focus();\r\n\t\treturn;\r\n\t}\r\n\t\r\n\tvar searchForm = document.search; \r\n\tsearchConditionClean(searchForm);\r\n\t\r\n\t\r\n\tsearchForm.query.value=$(\"#queryPu\").val();\r\n\tsearchForm.searchType.value=$(\"#searchType"
+  },
+  {
+    "name": "detailSearch",
+    "source_preview": "function detailSearch(step) {\r\n\t\r\n\tvar searchForm = document.search; \r\n\tsearchConditionClean(searchForm);\r\n\t\r\n\t\r\n\t/* 상세검색 정보 셋팅 */\r\n\tsearchForm.detailSearchIsOnOff.value=\"on\";\r\n\t\r\n\t// 검색타입\r\n\tsearchForm.searchType.value=$(\"#searchTypeSelPu\").val();\r\n\t\r\n\t\r\n\t// 검색어\r\n\tsearchForm.query.value=$(\"#queryPu\""
+  },
+  {
+    "name": "reSearch",
+    "source_preview": "function reSearch(){\r\n\tvar searchForm = document.search; \r\n\tsearchConditionClean(searchForm);\r\n\t\t\r\n\tsearchForm.searchType.value=$(\"#searchTypeSelPu\").val();\r\n\tsearchForm.reQuery.value = $(\"#researchBox input[name=reQuery]\").val();\r\n\tsearchForm.submit();\r\n}"
+  },
+  {
+    "name": "reSearchBottom",
+    "source_preview": "function reSearchBottom(){\r\n\tvar searchForm = document.search; \r\n\tsearchConditionClean(searchForm);\r\n\t\r\n\tsearchForm.searchType.value=$(\"#searchTypeSelPu\").val();\r\n\tsearchForm.reQuery.value = $(\"#researchBoxBottom input[name=reQuery]\").val();\r\n\tsearchForm.submit();\r\n}"
+  },
+  {
+    "name": "doCollection",
+    "source_preview": "function doCollection(coll) {\r\n\r\n\tvar searchForm = document.search; \r\n\tsearchConditionClean(searchForm);\r\n\t\r\n\t// 검색어 & 검색타입\r\n\tsearchForm.query.value=$(\"#queryPu\").val();\r\n\tsearchForm.searchType.value=$(\"#searchTypeSelPu\").val();\r\n\t\r\n\t\r\n\t/* 상세검색 정보 셋팅 */\r\n\tsearchForm.detailSearchIsOnOff.value=\"on\";\r\n"
+  },
+  {
+    "name": "doTaxCollection",
+    "source_preview": "function doTaxCollection(taxTitle,coll){\r\n\t\t\r\n\t\t\r\n\t$(\"input[name=ch_deatail_search_taxlist]\").each(function(){\r\n\t\tthis.checked=false;\t\t\t\r\n\t});\r\n\t\r\n\tif(taxTitle != null && taxTitle != \"\") {\t\t\r\n\t\t$(\"input[name=ch_deatail_search_taxlist][value='\"+taxTitle+\"']\")[0].checked=true;\t\t\t\t\r\n\t}\r\n\t\r\n\tif(coll != "
+  },
+  {
+    "name": "doBrdNmCollection",
+    "source_preview": "function doBrdNmCollection(brdNm,coll){\r\n\r\n\t//게시판명 세팅\r\n\t$(\"#brdNmTmp\").val(brdNm);\r\n\r\n\tif(coll != null){\r\n\t\t$(\"input[name=rd_detail_search_type][value='\"+coll+\"']\")[0].checked=true;\r\n\t}else {\r\n\t\t$(\"input[name=rd_detail_search_type][value='ALL']\")[0].checked=true;\r\n\t}\r\n\t\r\n\tdetailSearch();\r\n}"
+  },
+  {
+    "name": "doPaging",
+    "source_preview": "function doPaging(count) {\r\n\tvar searchForm = document.search;\r\n\tsearchForm.startCount.value = count;\r\n\tsearchForm.submit();\r\n}"
+  },
+  {
+    "name": "doSearchField",
+    "source_preview": "function doSearchField(field) {\r\n\tvar searchForm = document.search;\r\n\tsearchForm.searchField.value = field;\r\n\tsearchForm.submit();\r\n}"
+  },
+  {
+    "name": "decisionDtlpopUp",
+    "source_preview": "function decisionDtlpopUp(no, num, srchWrd) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\r\n\r\n\t  window.open(\"/explainInfo/detailView/decisionDtlView.do?num=\" + num + \"&relationshipN"
+  },
+  {
+    "name": "authoritativePopUp",
+    "source_preview": "function authoritativePopUp(no) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(\"/explainInfo/authoInterpretationDetail.do?num=\" + no, \"\",\"height=\"+hgt+\",width=\"+wdt+\","
+  },
+  {
+    "name": "legalPopUp",
+    "source_preview": "function legalPopUp(no) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(\"/explainInfo/lawInterpretationDetail.do?num=\" + no, \"\",\"height=\"+hgt+\",width=\"+wdt+\",menubar=no"
+  },
+  {
+    "name": "screenPopUp",
+    "source_preview": "function screenPopUp(no) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(\"/explainInfo/judgeDecisionDetail.do?num=\" + no, \"\",\"height=\"+hgt+\",width=\"+wdt+\",menubar=no,sc"
+  },
+  {
+    "name": "evaluationPopUp",
+    "source_preview": "function evaluationPopUp(no) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(\"/explainInfo/dlbDcnDetail.do?num=\" + no, \"\",\"height=\"+hgt+\",width=\"+wdt+\",menubar=no,scrol"
+  },
+  {
+    "name": "ordinancePopUp",
+    "source_preview": "function ordinancePopUp(no) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(\"/ordinance/rulesView.do?num=\" + no + \"&upperMenuId=8000000&menuNo=8030000\", \"\",\"height=\"+hg"
+  },
+  {
+    "name": "constitutionPopUp",
+    "source_preview": "function constitutionPopUp(no) {\r\n\t\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(\"/explainInfo/constitutionDcnDetail.do?num=\" + no, \"\",\"height=\"+hgt+\",width=\"+wdt+\",menub"
+  },
+  {
+    "name": "bbsPopUp",
+    "source_preview": "function bbsPopUp(url) {\r\n\t\r\n\twindow.open(url, \"_blank\");\r\n\t   \r\n}"
+  },
+  {
+    "name": "relatedCasePopup",
+    "source_preview": "function relatedCasePopup(url){\r\n\tvar wdt = screen.width;\r\n\tvar hgt = screen.height;\r\n\t\r\n\tif(screen.width < 800){\r\n\t\twdt = 800;\r\n\t\thgt = 600;\t\t\t\r\n\t}else{\r\n\t\twdt = 1240;\r\n\t\thgt = 820;\t\t\t\r\n\t}\r\n\t\r\n\twindow.open(url, \"\",\"height=\"+hgt+\",width=\"+wdt+\",menubar=no,scrollbars=yes,resizable=yes\");\r\n}"
+  },
+  {
+    "name": "setViewDocument",
+    "source_preview": "function setViewDocument(){\r\n\tvar MyWord = readCookie(\"MyDocument\");\r\n\t\r\n\tif (MyWord == null || MyWord == '') {\r\n\t\treturn;\r\n\t}\r\n\r\n\t$(\"#search_tab_1 > div > p.sbv_emty_list\").hide();\r\n\tvar WordList = MyWord.split(\"||\");\r\n\tfor(var i=0 ; i<WordList.length ; i++ ){\r\n\t\tvar temp_cookie = WordList[i].split"
+  },
+  {
+    "name": "setViewDocumentAction",
+    "source_preview": "function setViewDocumentAction(){\r\n\t$('#search_tab_1 > div > ul.sbv_info > li > a').click(function(){\r\n\t\t$('#search_tab_1 > div > ul.sbv_info > li > a').removeClass('on');\r\n\t\t$(this).addClass('on');\r\n\t});\r\n}"
+  },
+  {
+    "name": "AddViewDocument",
+    "source_preview": "function AddViewDocument(title, scriptFunc) {\r\n\t\r\n\tlocation.href=scriptFunc;\t// 팝업 스크립트\r\n\t\r\n\ttitle = title.replace(\"<font color=red>\",\"\");\r\n\ttitle = title.replace(\"<font color=red class=keyword>\",\"\");\r\n\ttitle = title.replace(\"<font color=red class='keyword'>\",\"\");\r\n\ttitle = title.replace(\"<font \",\"\""
+  },
+  {
+    "name": "deleteViewDocuments",
+    "source_preview": "function deleteViewDocuments() {\r\n\teraseCookie(\"MyDocument\");\r\n\t$('#search_tab_1 > div > ul.sbv_info > li').remove();\r\n\t$(\"#search_tab_1 > div > p.sbv_emty_list\").show();\r\n\tsetViewDocumentAction();\r\n}"
+  },
+  {
+    "name": "deleteViewDocument",
+    "source_preview": "function deleteViewDocument() {\r\n\tvar $onItem = $('#search_tab_1 > div > ul.sbv_info > li > a.on');\r\n\t\r\n\tif( 0==$onItem.length ){\r\n\t\talert('선택된 정보가 존재하지 않습니다.');\r\n\t\treturn;\r\n\t}\r\n\tvar title = $onItem.text();\r\n\tvar scriptFunc = $onItem.attr('href');\r\n\t\r\n\tvar MyWord = readCookie(\"MyDocument\");\r\n\tvar Wo"
+  },
+  {
+    "name": "setViewCabinet",
+    "source_preview": "function setViewCabinet(){\r\n\tvar MyCabinet = readCookie(\"Cabinet\");\r\n\tif (MyCabinet == null || MyCabinet == '') {\r\n\t\treturn;\r\n\t}\r\n\t\r\n\t$(\"#search_tab_2 div.sbv_info_wrap p.sbv_emty_list\").hide();\r\n\tvar CabinetList = MyCabinet.split('§');\r\n\tfor(var cabIdx=0 ; cabIdx<CabinetList.length ; cabIdx++ ){\r\n\t"
+  },
+  {
+    "name": "toggleDetail",
+    "source_preview": "function toggleDetail() {\n\t$('#researchBox').removeClass('on');\n\t$('#detailSearchBox').removeClass('on');\n\tif($('div.help_btn a.detail_btn').hasClass('on')){\n\t\t$('#researchBox').addClass('on');\n\t\t$('#detailSearchBox').addClass('on');\n\t}\n}"
+  },
+  {
+    "name": "doSearchSub",
+    "source_preview": "function doSearchSub(e) {\n\t\t  if(e == null || e.keyCode == 13) {\n\t\t    var searchFormSub = document.searchTop;\n\t  \t\tif (searchFormSub.querySub.value == \"\") {\n\t  \t\t\talert(\"검색어를 입력하세요.\");\n\t  \t\t\tsearchFormSub.querySub.focus();\n\t  \t\t\treturn false;\n\t  \t\t}\n\t  \t\t// 20170629_s\n\t\t\t  searchFormSub.query.value"
+  }
+]

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiUrl } from '../../lib/api'
 
 export default function CertSelector({ selectedCertId, onSelect }) {
   const [certs, setCerts] = useState([])
@@ -12,7 +13,7 @@ export default function CertSelector({ selectedCertId, onSelect }) {
       setError(null)
 
       try {
-        const response = await fetch('/api/auth/certs')
+        const response = await fetch(apiUrl('/api/auth/certs'))
         const data = await response.json()
 
         if (!response.ok) {
