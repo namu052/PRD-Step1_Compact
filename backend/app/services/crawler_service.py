@@ -206,19 +206,20 @@ class CrawlerService:
                     if not existing or card.relevance_score > existing.relevance_score:
                         cards_by_id[card.id] = card
 
-            # 로그인 상태이면 18개 개별 BBS 게시판 검색
-            if self._olta_logged_in:
-                bbs_cards = await self._search_all_bbs_boards(context, queries[:2])
-                for card in bbs_cards:
-                    existing = cards_by_id.get(card.id)
-                    if not existing or card.relevance_score > existing.relevance_score:
-                        cards_by_id[card.id] = card
-            else:
-                logger.info("인증 세션 없음 - 기타(BBS) 게시판 검색 건너뜀")
-
             ranked_cards = sorted(cards_by_id.values(), key=lambda item: item.relevance_score, reverse=True)
             limited_cards = ranked_cards[: settings.olta_max_detail_fetch]
             details = await self._collect_details(context, limited_cards)
+
+            # 로그인 상태이면 18개 개별 BBS 게시판 검색 (링크 클릭 → 상세 수집)
+            if self._olta_logged_in:
+                bbs_results = await self._search_all_bbs_boards(context, queries[:2])
+                detail_ids = {d.id for d in details}
+                for result in bbs_results:
+                    if result.id not in detail_ids:
+                        details.append(result)
+                        detail_ids.add(result.id)
+            else:
+                logger.info("인증 세션 없음 - 기타(BBS) 게시판 검색 건너뜀")
         finally:
             await page.close()
 
@@ -295,47 +296,50 @@ class CrawlerService:
         self,
         auth_context: BrowserContext,
         queries: list[str],
-    ) -> list[SearchCard]:
-        """18개 BBS 게시판을 개별적으로 검색하고, 결과에 게시판명을 태깅한다."""
+    ) -> list[CrawlResult]:
+        """18개 BBS 게시판을 개별적으로 검색하고, 링크 클릭으로 상세 자료를 수집한다."""
         settings = get_settings()
         semaphore = asyncio.Semaphore(settings.olta_bbs_concurrency)
 
-        async def search_board(board_name: str) -> list[SearchCard]:
+        async def search_board(board_name: str) -> list[CrawlResult]:
             async with semaphore:
-                board_cards = []
+                board_results: list[CrawlResult] = []
                 for query in queries:
-                    cards = await self._search_single_bbs_board(
+                    results = await self._search_single_bbs_board(
                         auth_context, query, board_name,
                     )
-                    board_cards.extend(cards)
-                return board_cards
+                    board_results.extend(results)
+                return board_results
 
         board_results = await asyncio.gather(
             *(search_board(board) for board in BBS_BOARDS),
             return_exceptions=True,
         )
 
-        all_cards = []
+        all_results: list[CrawlResult] = []
         for board_name, result in zip(BBS_BOARDS, board_results, strict=False):
             if isinstance(result, Exception):
                 logger.warning("BBS 게시판 '%s' 검색 실패: %s", board_name, result)
                 continue
-            all_cards.extend(result)
+            all_results.extend(result)
 
-        logger.info("BBS 전체 검색 완료: %d건 (18개 게시판)", len(all_cards))
-        return all_cards
+        logger.info("BBS 전체 검색 완료: %d건 (18개 게시판)", len(all_results))
+        return all_results
 
     async def _search_single_bbs_board(
         self,
         auth_context: BrowserContext,
         query: str,
         board_name: str,
-    ) -> list[SearchCard]:
-        """단일 BBS 게시판을 검색하고 페이징하여 결과를 수집한다."""
+    ) -> list[CrawlResult]:
+        """단일 BBS 게시판을 검색하고, 각 게시물 링크를 클릭하여 상세 자료를 수집한다."""
         settings = get_settings()
         page = await auth_context.new_page()
         page.set_default_timeout(settings.playwright_timeout)
         type_label = f"기타/{board_name}"
+        results: list[CrawlResult] = []
+        seen_ids: set[str] = set()
+
         try:
             search_url = urljoin(settings.olta_base_url, "/search/PU_0003_search.jsp")
             await page.goto(search_url, wait_until="domcontentloaded")
@@ -343,8 +347,8 @@ class CrawlerService:
             await page.evaluate("doSearchPu()")
             await page.wait_for_load_state("networkidle")
 
-            # 게시판별 필터 적용: doBrdNmCollection(boardName, 'bbs')
-            # 이 함수는 #brdNmTmp에 게시판명을 설정 후 detailSearch()로 폼 제출
+            # 게시판별 필터 적용
+            logger.debug("BBS '%s' 필터 적용: doBrdNmCollection('%s','bbs')", board_name, board_name)
             await page.evaluate(f"doBrdNmCollection('{board_name}','bbs')")
 
             try:
@@ -352,50 +356,159 @@ class CrawlerService:
             except Exception:
                 await page.wait_for_load_state("domcontentloaded")
 
-            try:
-                await page.wait_for_selector(
-                    OLTA_SELECTORS["search"]["result_title_links"],
-                    timeout=5000,
+            current_url = page.url
+            logger.debug("BBS '%s' 필터 후 URL: %s", board_name, current_url)
+
+            for page_index in range(settings.olta_bbs_max_pages_per_board):
+                if page_index > 0:
+                    offset = page_index * 10
+                    try:
+                        await page.evaluate(f"doPaging('{offset}')")
+                        await page.wait_for_selector(
+                            OLTA_SELECTORS["search"]["result_title_links"],
+                            timeout=5000,
+                        )
+                    except Exception:
+                        break
+
+                links = page.locator(OLTA_SELECTORS["search"]["result_title_links"])
+                count = await links.count()
+                logger.debug("BBS '%s' 페이지%d 링크 수: %d", board_name, page_index, count)
+                if count == 0:
+                    # 셀렉터가 맞지 않을 수 있으므로 페이지 내 모든 링크도 확인
+                    all_links = await page.locator("a[onclick]").count()
+                    logger.debug("BBS '%s' 페이지%d 전체 onclick 링크 수: %d", board_name, page_index, all_links)
+                    break
+
+                # 클릭 전에 제목·메타 정보를 먼저 추출 (클릭하면 DOM이 바뀔 수 있으므로)
+                link_info = await links.evaluate_all(
+                    """(links) => links.map((link) => {
+                        const wrapper = link.closest('li');
+                        const meta = wrapper?.querySelector('p:not(.tt):not(.txt)')?.textContent || '';
+                        const preview = wrapper?.querySelector('p.txt')?.textContent || '';
+                        return {
+                            title: (link.textContent || '').trim(),
+                            meta: meta.trim(),
+                            preview: preview.trim(),
+                        };
+                    })"""
                 )
-            except Exception:
-                pass
 
-            # 첫 페이지 수집
-            cards_by_id: dict[str, SearchCard] = {}
-            page_cards = await self._extract_cards_from_current_page(page, query, 0)
-            for card in page_cards:
-                card.type = type_label
-                cards_by_id[card.id] = card
+                # 각 게시물 링크를 클릭하여 상세 페이지 진입 → 자료 수집
+                for i in range(count):
+                    try:
+                        result = await self._click_and_collect_bbs_item(
+                            page, links, i, link_info,
+                            type_label, board_name, page_index, seen_ids,
+                        )
+                        if result:
+                            results.append(result)
+                    except Exception:
+                        logger.debug(
+                            "BBS '%s' 게시물 %d 클릭 수집 실패",
+                            board_name, i, exc_info=True,
+                        )
 
-            # 추가 페이지 수집
-            for page_index in range(1, settings.olta_bbs_max_pages_per_board):
-                if not page_cards:
-                    break
-                offset = page_index * 10
-                try:
-                    await page.evaluate(f"doPaging('{offset}')")
-                    await page.wait_for_selector(
-                        OLTA_SELECTORS["search"]["result_title_links"],
-                        timeout=5000,
-                    )
-                except Exception:
-                    break
-
-                page_cards = await self._extract_cards_from_current_page(page, query, page_index)
-                for card in page_cards:
-                    card.type = type_label
-                    if card.id not in cards_by_id:
-                        cards_by_id[card.id] = card
-
-            result_cards = list(cards_by_id.values())
-            if result_cards:
-                logger.info("BBS '%s' 검색: %d건 (쿼리: %s)", board_name, len(result_cards), query)
-            return result_cards
+            if results:
+                logger.info("BBS '%s' 검색: %d건 (쿼리: %s)", board_name, len(results), query)
+            return results
         except Exception:
             logger.warning("BBS '%s' 검색 실패 (쿼리: %s)", board_name, query, exc_info=True)
             return []
         finally:
             await page.close()
+
+    async def _click_and_collect_bbs_item(
+        self,
+        page: Page,
+        links,
+        index: int,
+        link_info: list[dict],
+        type_label: str,
+        board_name: str,
+        page_index: int,
+        seen_ids: set[str],
+    ) -> CrawlResult | None:
+        """검색 결과의 개별 링크를 클릭하여 팝업/상세 페이지에서 자료를 수집한다."""
+        detail_page: Page | None = None
+        try:
+            # 링크 클릭 시 팝업(window.open)이 열리는 것을 기대
+            async with page.expect_popup(timeout=5000) as popup_info:
+                await links.nth(index).click()
+            detail_page = await popup_info.value
+        except Exception:
+            # 팝업이 아닌 경우: 같은 페이지 내 네비게이션 시도
+            try:
+                await links.nth(index).click()
+                await page.wait_for_load_state("domcontentloaded")
+                detail_page = None  # 현재 page 자체가 상세 페이지
+            except Exception:
+                return None
+
+        # 상세 페이지에서 콘텐츠 수집
+        target = detail_page if detail_page else page
+        try:
+            await target.wait_for_load_state("domcontentloaded")
+            try:
+                await target.wait_for_load_state("networkidle", timeout=3000)
+            except Exception:
+                pass
+
+            detail_url = target.url
+            raw_body = await target.locator("body").inner_text()
+            content = self._extract_meaningful_content(raw_body)
+
+            if not content or "500 Internal Server error" in content:
+                return None
+
+            comments = await self._extract_comments(target)
+
+            # ID 생성
+            ntt_match = re.search(r"nttId=(\d+)", detail_url)
+            bbs_id_match = re.search(r"bbsId=([^&]+)", detail_url)
+            if ntt_match:
+                base_id = ntt_match.group(1)
+                card_id = (
+                    f"olta_bbs_{bbs_id_match.group(1)}_{base_id}"
+                    if bbs_id_match
+                    else f"olta_bbs_{base_id}"
+                )
+            else:
+                card_id = f"olta_bbs_{board_name}_{page_index}_{index}"
+
+            if card_id in seen_ids:
+                return None
+            seen_ids.add(card_id)
+
+            info = link_info[index] if index < len(link_info) else {}
+            title = self._clean_text(info.get("title", f"{board_name} 게시물 {index + 1}"))
+            meta = self._clean_text(info.get("meta", ""))
+
+            full_content = "\n".join(part for part in [meta, content] if part)
+            if comments:
+                full_content += f"\n\n[댓글/답변]\n{comments}"
+
+            preview_text = content[:180] + "..." if len(content) > 180 else content
+            score = max(0.1, 0.85 - (index * 0.04) - (page_index * 0.03))
+
+            return CrawlResult(
+                id=card_id,
+                title=title,
+                type=type_label,
+                content=full_content,
+                preview=preview_text,
+                url=detail_url,
+                relevance_score=score,
+                document_year=self._extract_document_year(content),
+                comments=comments,
+                crawled_at=datetime.now(),
+            )
+        finally:
+            # 팝업인 경우 닫고, 같은 페이지 네비게이션인 경우 뒤로 가기
+            if detail_page:
+                await detail_page.close()
+            else:
+                await page.go_back(wait_until="domcontentloaded")
 
     async def _go_to_query(self, page: Page, query: str) -> None:
         settings = get_settings()
