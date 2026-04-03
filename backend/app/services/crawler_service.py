@@ -1194,6 +1194,56 @@ class CrawlerService:
                 deduped[card.id] = card
         return list(deduped.values())
 
+    async def _discover_tax_sub_boards(
+        self, page: Page, collection_id: str,
+    ) -> list[dict]:
+        """table.tb_search 에서 세목별 서브게시판(취득/등면/주민/지소/재산/자동/기타)을 파싱한다."""
+        try:
+            raw = await page.evaluate(
+                """
+                (collectionId) => {
+                    const table = document.querySelector('table.tb_search');
+                    if (!table) return [];
+                    const headers = Array.from(table.querySelectorAll('thead th')).map(
+                        th => (th.textContent || '').trim()
+                    );
+                    // 데이터 행의 td 목록 (첫 번째 tbody tr)
+                    const cells = Array.from(table.querySelectorAll('tbody tr:first-child td'));
+                    const results = [];
+                    for (let i = 0; i < cells.length; i++) {
+                        const td = cells[i];
+                        const onclick = td.getAttribute('onclick') || '';
+                        const countText = (td.textContent || '').trim().replace(/,/g, '');
+                        const count = /^\\d+$/.test(countText) ? Number(countText) : -1;
+                        // doTaxCollection('11100','ordinance') 패턴에서 taxCode 추출
+                        const m = onclick.match(/doTaxCollection\\(\\s*'?(\\w+|null)'?\\s*,/);
+                        const taxCode = m ? m[1] : null;
+                        // header 인덱스: thead에는 "구분" + "합계" + 세목들이 있고
+                        // tbody td는 "합계" td부터 시작 (th "합계"는 별도)
+                        // td[0] = 합계, td[1] = 취득, td[2] = 등면 ...
+                        // header[0] = 구분, header[1] = 합계, header[2] = 취득 ...
+                        const headerIdx = i + 1; // td index 0 → header index 1 (합계)
+                        const label = headers[headerIdx] || `세목${i}`;
+                        if (label === '합계') continue; // 합계는 서브게시판이 아님
+                        results.push({
+                            label: label,
+                            count: count,
+                            tax_code: taxCode === 'null' ? null : taxCode,
+                            collection_id: collectionId,
+                            onclick: onclick,
+                        });
+                    }
+                    return results;
+                }
+                """,
+                collection_id,
+            )
+        except Exception:
+            logger.debug("Tax sub-board discovery failed for %s", collection_id, exc_info=True)
+            return []
+
+        return [sb for sb in raw if sb.get("label")]
+
     async def _collect_collection_cards(
         self,
         page: Page,
@@ -1207,8 +1257,12 @@ class CrawlerService:
         await page.evaluate(f"doCollection('{collection_id}')")
         await self._wait_for_collection_results(page)
 
-        sub_boards = await self._discover_sub_boards(page)
-        if not sub_boards:
+        # ── 세목 서브게시판 발견 (table.tb_search 기반) ──
+        tax_sub_boards = await self._discover_tax_sub_boards(page, collection_id)
+        has_nonzero = any(sb.get("count", 0) > 0 for sb in tax_sub_boards)
+
+        if not tax_sub_boards or not has_nonzero:
+            # 세목 테이블이 없거나 모든 세목이 0건 → 전체 수집
             await self._emit_collection_progress(
                 on_progress,
                 board_name=board_name,
@@ -1229,14 +1283,13 @@ class CrawlerService:
             )
             return cards
 
+        # ── 세목별 수집 ──
         cards_by_id: dict[str, SearchCard] = {}
-        selected_any_sub_board = False
-        for sub_board in sub_boards:
-            sub_board_name = self._clean_text(sub_board.get("label", ""))
-            if not sub_board_name:
-                continue
+        collected_any = False
+        for sb in tax_sub_boards:
+            sub_board_name = sb["label"]
+            sub_board_count = sb.get("count", -1)
 
-            sub_board_count = int(sub_board.get("count", -1))
             if sub_board_count == 0:
                 await self._emit_collection_progress(
                     on_progress,
@@ -1253,15 +1306,27 @@ class CrawlerService:
                 sub_board_name=sub_board_name,
                 status="collecting",
             )
-            if not await self._select_sub_board(page, sub_board):
+
+            # doTaxCollection 호출로 세목 필터
+            tax_code = sb.get("tax_code")
+            try:
+                if tax_code:
+                    await page.evaluate(
+                        f"doTaxCollection('{tax_code}','{collection_id}')"
+                    )
+                else:
+                    await page.evaluate(
+                        f"doTaxCollection(null,'{collection_id}')"
+                    )
+                await self._wait_for_collection_results(page)
+            except Exception:
                 logger.info(
-                    "Main collection sub-board selection failed: collection=%s sub_board=%s",
-                    collection_id,
-                    sub_board_name,
+                    "doTaxCollection failed: tax_code=%s collection=%s",
+                    tax_code, collection_id,
                 )
                 continue
 
-            selected_any_sub_board = True
+            collected_any = True
             sub_board_cards = await self._collect_collection_result_pages(
                 page,
                 query,
@@ -1282,12 +1347,14 @@ class CrawlerService:
                 titles=[c.title for c in sub_board_cards],
             )
 
+            # 원래 collection으로 복귀
             await page.evaluate(f"doCollection('{collection_id}')")
             await self._wait_for_collection_results(page)
 
-        if selected_any_sub_board:
+        if collected_any:
             return list(cards_by_id.values())
 
+        # 모든 세목 선택 실패 시 전체 수집 fallback
         await self._emit_collection_progress(
             on_progress,
             board_name=board_name,

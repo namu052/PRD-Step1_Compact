@@ -33,7 +33,6 @@ from app.services.verification.source_verifier import source_verifier
 from app.services.verification.verification_aggregator import verification_aggregator
 from app.services.llm_service import DraftResponse, llm_service
 from app.services.search_service import SearchPlan, search_service
-from app.services.web_search_service import web_search_service
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -203,117 +202,71 @@ async def chat(payload: ChatRequest):
         history = VerificationHistory()
 
         # ──────────────────────────────────────────────
-        # Stage 1: 웹 검색+초안 과 OLTA 파이프라인 병렬 실행
+        # Stage 1: OLTA 자료 수집 → 초안 작성
         # ──────────────────────────────────────────────
         yield sse_event("stage_change", {"stage": "searching"})
         search_plan = await search_service.build_search_plan(payload.question)
         yield stage_notice(search_plan.to_notice())
 
-        # --- OLTA 브랜치 (백그라운드) ---
-        olta_result_holder: dict = {}
-        olta_notices: list[str] = []
         crawl_progress_stats: list[BoardCollectionStat] = []
         olta_event_queue: asyncio.Queue[str] = asyncio.Queue()
 
-        async def queue_olta_event(event: str) -> None:
-            await olta_event_queue.put(event)
-
         async def on_crawl_progress(stat: BoardCollectionStat) -> None:
             crawl_progress_stats.append(stat)
-            await queue_olta_event(sse_event("crawl_progress", stat.model_dump()))
+            await olta_event_queue.put(sse_event("crawl_progress", stat.model_dump()))
 
-        async def olta_branch():
-            try:
-                olta_logged_in = await crawler_service.check_olta_login()
-            except Exception:
-                olta_logged_in = False
-            olta_result_holder["logged_in"] = olta_logged_in
+        try:
+            olta_logged_in = await crawler_service.check_olta_login()
+        except Exception:
+            olta_logged_in = False
 
-            if olta_logged_in:
-                olta_notices.append(stage_notice("OLTA 로그인 확인 완료 - 기타(BBS) 게시판 포함 전체 수집합니다."))
-            else:
-                olta_notices.append(sse_event("olta_login_required", {
-                    "message": "OLTA 미로그인 상태입니다. 기타(BBS) 게시판 수집이 제한됩니다. OLTA 로그인 후 더 정확한 답변을 받을 수 있습니다.",
-                }))
-                olta_notices.append(stage_notice("OLTA 미로그인 - 기존 법령/판례 자료만 수집합니다."))
+        if olta_logged_in:
+            yield stage_notice("OLTA 로그인 확인 완료 - 기타(BBS) 게시판 포함 전체 수집합니다.")
+        else:
+            yield sse_event("olta_login_required", {
+                "message": "OLTA 미로그인 상태입니다. 기타(BBS) 게시판 수집이 제한됩니다. OLTA 로그인 후 더 정확한 답변을 받을 수 있습니다.",
+            })
+            yield stage_notice("OLTA 미로그인 - 기존 법령/판례 자료만 수집합니다.")
 
-            crawl_results = await _search_with_optional_progress(
-                session,
-                search_plan.keywords,
-                search_plan.categories,
-                on_progress=on_crawl_progress,
-            )
-            ranked_results = await embedding_service.rank_results(
-                payload.question,
-                crawl_results,
-                preferred_year=search_plan.detected_year,
-                prefer_latest=search_plan.prefer_latest,
-            )
-
-            evidence_groups = await evidence_group_service.group(payload.question, ranked_results)
-            slots = await evidence_summary_service.summarize(
-                payload.question,
-                evidence_groups,
-                ranked_results,
-            )
-
-            olta_notices.append(stage_notice(
-                f"OLTA 자료 수집 완료: {len(crawl_results)}건 수집, "
-                f"{len(ranked_results)}건 우선 검토, 근거 묶음 {len(slots)}개 정리."
-            ))
-
-            olta_result_holder["ranked_results"] = ranked_results
-            olta_result_holder["evidence_slots"] = slots
-
-        olta_task = asyncio.create_task(olta_branch())
-
-        # --- 웹 브랜치 (스트리밍) ---
-        web_results = await web_search_service.search(
-            search_plan.keywords or [payload.question],
+        crawl_results = await _search_with_optional_progress(
+            session,
+            search_plan.keywords,
+            search_plan.categories,
+            on_progress=on_crawl_progress,
         )
+        while not olta_event_queue.empty():
+            yield await olta_event_queue.get()
+
+        ranked_results = await embedding_service.rank_results(
+            payload.question,
+            crawl_results,
+            preferred_year=search_plan.detected_year,
+            prefer_latest=search_plan.prefer_latest,
+        )
+
+        evidence_groups = await evidence_group_service.group(payload.question, ranked_results)
+        evidence_slots = await evidence_summary_service.summarize(
+            payload.question,
+            evidence_groups,
+            ranked_results,
+        )
+
         yield stage_notice(
-            f"웹 검색 완료: {len(web_results)}건의 관련 자료를 찾았습니다."
+            f"OLTA 자료 수집 완료: {len(crawl_results)}건 수집, "
+            f"{len(ranked_results)}건 우선 검토, 근거 묶음 {len(evidence_slots)}개 정리."
         )
 
+        # --- 초안 작성 (OLTA 결과 기반) ---
         yield sse_event("stage_change", {"stage": "drafting"})
-        draft_queue: asyncio.Queue[str] = asyncio.Queue()
 
-        async def on_draft_token(chunk: str) -> None:
-            await draft_queue.put(sse_event("token", {"token": chunk}))
-
-        draft_task = asyncio.create_task(
-            llm_service.generate_web_draft(
-                payload.question,
-                web_results,
-                on_token=on_draft_token,
-            )
+        draft = await llm_service.revise_draft(
+            question=payload.question,
+            draft_answer="",
+            verification_result=None,
+            crawl_results=ranked_results,
+            evidence_slots=evidence_slots,
         )
-
-        while True:
-            while not olta_event_queue.empty():
-                yield await olta_event_queue.get()
-            if draft_task.done() and draft_queue.empty():
-                break
-            try:
-                yield await asyncio.wait_for(draft_queue.get(), timeout=0.1)
-            except TimeoutError:
-                continue
-
-        draft = await draft_task
-        yield stage_notice("초안 작성 완료: 웹 검색 결과를 기반으로 1차 답변 초안을 만들었습니다.")
-
-        # --- OLTA 브랜치 완료 대기 ---
-        while not olta_task.done() or not olta_event_queue.empty():
-            while not olta_event_queue.empty():
-                yield await olta_event_queue.get()
-            if not olta_task.done():
-                await asyncio.sleep(0.1)
-        await olta_task
-        for notice in olta_notices:
-            yield notice
-
-        ranked_results = olta_result_holder.get("ranked_results", [])
-        evidence_slots = olta_result_holder.get("evidence_slots", [])
+        yield stage_notice("초안 작성 완료: OLTA 자료를 기반으로 1차 답변 초안을 만들었습니다.")
 
         # ──────────────────────────────────────────────
         # Stage 2: OLTA 검증
@@ -372,12 +325,9 @@ async def chat(payload: ChatRequest):
                     f"'{', '.join(gap_analysis.search_queries[:2])}' 키워드로 추가 검색합니다."
                 )
 
-                # 추가 웹 검색 + OLTA 검색 (병렬)
-                extra_web, extra_olta_raw = await asyncio.gather(
-                    web_search_service.search(gap_analysis.search_queries),
-                    crawler_service.search(
-                        session, gap_analysis.search_queries, search_plan.categories,
-                    ),
+                # 추가 OLTA 검색
+                extra_olta_raw = await crawler_service.search(
+                    session, gap_analysis.search_queries, search_plan.categories,
                 )
                 extra_olta = await embedding_service.rank_results(
                     payload.question, extra_olta_raw,
@@ -405,7 +355,7 @@ async def chat(payload: ChatRequest):
                 )
 
                 yield stage_notice(
-                    f"추가 자료 수집 완료: 웹 {len(extra_web)}건, OLTA {len(extra_olta)}건 추가."
+                    f"추가 자료 수집 완료: OLTA {len(extra_olta)}건 추가."
                 )
 
                 # 초안 보완
@@ -425,7 +375,7 @@ async def chat(payload: ChatRequest):
                 history.add_round(
                     confidence=verification_result.overall_confidence,
                     gaps=[g for g in gap_analysis.gaps[:3]],
-                    actions=f"추가 조사 {iteration + 1}차 (웹 {len(extra_web)}건 + OLTA {len(extra_olta)}건)",
+                    actions=f"추가 조사 {iteration + 1}차 (OLTA {len(extra_olta)}건)",
                 )
                 await emit_notice(
                     f"재검증 완료: 신뢰도 {round(verification_result.overall_confidence * 100, 1)}% "
@@ -478,13 +428,13 @@ async def chat(payload: ChatRequest):
 
             process_summaries = _build_process_summaries(
                 payload.question, search_plan, all_olta_results,
-                verification_result, history, web_results,
+                verification_result, history,
             )
             session.crawl_cache.update({r.id: r for r in process_summaries})
 
         except Exception:
             logger.warning("검증/최종화 파이프라인 실패, 초안 반환", exc_info=True)
-            fallback_warning = "검증 단계에 실패하여 웹 검색 기반 초안을 그대로 반환합니다."
+            fallback_warning = "검증 단계에 실패하여 OLTA 기반 초안을 그대로 반환합니다."
             yield sse_event("stage_change", {"stage": "finalizing"})
             for index in range(0, len(fallback_warning), 5):
                 yield sse_event("token", {"token": fallback_warning[index : index + 5]})
@@ -544,7 +494,6 @@ def _build_process_summaries(
     ranked_results,
     verification_result,
     history: VerificationHistory,
-    web_results,
 ):
     settings = get_settings()
     searched_titles = [result.title for result in ranked_results[:5]]
@@ -554,13 +503,12 @@ def _build_process_summaries(
         type="처리 요약",
         preview=(
             f"{search_plan.question_type} 질문으로 판단했고 "
-            f"웹 검색 {len(web_results)}건 + OLTA {len(ranked_results)}건을 수집했습니다."
+            f"OLTA {len(ranked_results)}건을 수집했습니다."
         ),
         content="\n".join([
             f"질문: {question}",
             f"질문 유형: {search_plan.question_type}",
             f"추출 키워드: {', '.join(search_plan.keywords) if search_plan.keywords else question}",
-            f"웹 검색 결과: {len(web_results)}건",
             f"OLTA 수집 결과: {len(ranked_results)}건",
             "상위 근거 문서:",
             *[f"- {title}" for title in searched_titles],
@@ -582,9 +530,9 @@ def _build_process_summaries(
         preview=f"검증 {len(history.rounds)}회 수행, {confidence_line}",
         content="\n".join([
             "파이프라인 흐름:",
-            "1. 웹 검색으로 초안 작성",
-            "2. OLTA 자료 수집 및 1차 검증",
-            "3. gap 분석 기반 추가 조사 및 재검증",
+            "1. OLTA 자료 수집 및 초안 작성",
+            "2. OLTA 자료 기반 1차 검증",
+            "3. gap 분석 기반 추가 OLTA 조사 및 재검증",
             "4. 최종 답변 생성 (검증 이력 포함)",
             "",
             "검증 이력:",

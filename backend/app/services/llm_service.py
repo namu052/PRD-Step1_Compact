@@ -150,7 +150,7 @@ class LLMService:
         self,
         question: str,
         draft_answer: str,
-        verification_result: VerificationResult,
+        verification_result: VerificationResult | None,
         crawl_results: list[CrawlResult],
         evidence_slots: list[EvidenceSlot] | None = None,
     ) -> DraftResponse:
@@ -177,7 +177,10 @@ class LLMService:
             )
         except Exception:
             logger.warning("LLM 초안 수정 실패, fallback 사용", exc_info=True)
-            answer = self._fallback_revise(draft_answer, verification_result)
+            if verification_result is not None:
+                answer = self._fallback_revise(draft_answer, verification_result)
+            else:
+                answer = draft_answer or "답변을 생성할 수 없습니다. 다시 시도해 주세요."
             usage = {}
         cited_sources = self._extract_cited_sources(answer, crawl_results)
         return DraftResponse(answer=answer, cited_sources=cited_sources, token_usage=usage)
@@ -266,7 +269,10 @@ class LLMService:
                 cited.append(result.id)
         return cited
 
-    def _format_verification_feedback(self, verification_result: VerificationResult) -> str:
+    def _format_verification_feedback(self, verification_result: VerificationResult | None) -> str:
+        if verification_result is None:
+            return "초안 없음 - OLTA 자료를 기반으로 처음부터 답변을 작성해 주세요."
+
         lines = [
             f"- 전체 신뢰도: {verification_result.overall_confidence}",
             f"- 주장 신뢰도: {verification_result.claim_confidence}",

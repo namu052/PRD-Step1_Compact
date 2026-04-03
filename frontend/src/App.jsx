@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import AppShell from './components/layout/AppShell'
-import OltaLoginGuard from './components/auth/OltaLoginGuard'
 import { useAuthStore } from './stores/authStore'
 import { apiUrl } from './lib/api'
 
@@ -40,11 +39,6 @@ function App() {
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
-
-  // OLTA 미로그인 상태면 로그인 안내 화면 표시
-  if (!oltaLoggedIn) {
-    return <OltaLoginGuard />
-  }
 
   return <AppShell />
 }

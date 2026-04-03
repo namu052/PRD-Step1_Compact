@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     openai_summarization_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
 
-    playwright_headless: bool = True
+    playwright_headless: bool = False
     playwright_timeout: int = 10000
     olta_base_url: str = "https://www.olta.re.kr"
     olta_max_results_per_query: int = 8

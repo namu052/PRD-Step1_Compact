@@ -83,6 +83,17 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  openOltaForLogin: async () => {
+    set({ oltaChecking: true, oltaMessage: null })
+    try {
+      const res = await fetch(apiUrl('/api/auth/olta-login'), { method: 'POST' })
+      const data = await res.json()
+      set({ oltaChecking: false, oltaMessage: data.message || null })
+    } catch {
+      set({ oltaChecking: false, oltaMessage: 'OLTA 브라우저 열기 실패' })
+    }
+  },
+
   verifyOltaLogin: async () => {
     set({ oltaChecking: true, oltaMessage: null })
     try {
