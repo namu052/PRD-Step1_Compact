@@ -104,6 +104,7 @@ class BoardCollectionStat(BaseModel):
     collected_count: int = 0
     skipped: bool = False
     status: str = "pending"
+    titles: list[str] = Field(default_factory=list)
 
 
 class CollectionProgress(BaseModel):

@@ -37,6 +37,11 @@ backend/.playwright/
 # Debug DOM dump HTML files (large, regeneratable)
 backend/debug/**/*.html
 
+# Test output / temp artifacts
+backend/collection_result.txt
+backend/pytest-cache-files-*/
+backend/backend/
+
 # Logs and temp files
 *.log
 logs/

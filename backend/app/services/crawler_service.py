@@ -1225,6 +1225,7 @@ class CrawlerService:
                 board_name=board_name,
                 collected_count=len(cards),
                 status="done",
+                titles=[c.title for c in cards],
             )
             return cards
 
@@ -1278,6 +1279,7 @@ class CrawlerService:
                 sub_board_name=sub_board_name,
                 collected_count=len(sub_board_cards),
                 status="done",
+                titles=[c.title for c in sub_board_cards],
             )
 
             await page.evaluate(f"doCollection('{collection_id}')")
@@ -1302,6 +1304,7 @@ class CrawlerService:
             board_name=board_name,
             collected_count=len(cards),
             status="done",
+            titles=[c.title for c in cards],
         )
         return cards
 
@@ -1985,6 +1988,7 @@ class CrawlerService:
                             all_results.append(result)
                             board_result_count += 1
 
+                    board_titles = [r.title for r in all_results[-board_result_count:]] if board_result_count > 0 else []
                     board_counts[board_label] = board_counts.get(board_label, 0) + board_result_count
                     await self._emit_collection_progress(
                         on_progress,
@@ -1993,6 +1997,7 @@ class CrawlerService:
                         collected_count=board_counts[board_label],
                         skipped=board_counts[board_label] == 0,
                         status="done" if board_counts[board_label] > 0 else "skipped",
+                        titles=board_titles,
                     )
                     logger.info(
                         "BBS board fetch complete: %s -> %d results",
@@ -2636,6 +2641,7 @@ class CrawlerService:
         collected_count: int = 0,
         skipped: bool = False,
         status: str = "pending",
+        titles: list[str] | None = None,
     ) -> None:
         if on_progress is None:
             return
@@ -2647,6 +2653,7 @@ class CrawlerService:
                 collected_count=collected_count,
                 skipped=skipped,
                 status=status,
+                titles=titles or [],
             )
         )
 

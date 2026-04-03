@@ -64,13 +64,14 @@ class CollectionStatsTracker:
         else:
             print(f"  [{elapsed:6.1f}s] {status_icon} {location} — {stat.status}")
 
-    def print_summary(self, total_results: int):
-        """최종 집계 출력"""
+    def print_summary(self, total_results: int, results: list = None):
+        """최종 집계 출력 — 서브게시판별 제목 리스트 포함"""
         elapsed = time.time() - self.start_time
+
         print("\n")
-        print("=" * 70)
+        print("=" * 80)
         print(f"  OLTA 자료 수집 최종 집계  (소요시간: {elapsed:.1f}초)")
-        print("=" * 70)
+        print("=" * 80)
 
         grand_total = 0
         board_summaries = []
@@ -87,69 +88,107 @@ class CollectionStatsTracker:
                     continue
                 if stat.status == "done":
                     board_collected += stat.collected_count
-                    sub_details.append((sub_key, stat.collected_count, False))
+                    sub_details.append((sub_key, stat.collected_count, False, stat.titles))
                 elif stat.status == "skipped" or stat.skipped:
-                    sub_details.append((sub_key, 0, True))
+                    sub_details.append((sub_key, 0, True, []))
 
             # __total__만 있고 sub가 없는 경우
             if not sub_details and "__total__" in subs:
                 total_stat = subs["__total__"]
                 if total_stat.status == "done":
                     board_collected = total_stat.collected_count
+                    sub_details.append(("(전체)", total_stat.collected_count, False, total_stat.titles))
 
             grand_total += board_collected
             board_summaries.append((board_name, board_collected, sub_details))
 
-        print(f"\n  {'게시판':<28} {'수집건수':>8}   세부 내역")
-        print("  " + "─" * 66)
-
+        # ── 게시판별 상세 (집계 + 제목 리스트) ──
+        skipped_count = 0
+        board_num = 0
         for board_name, board_total, sub_details in board_summaries:
-            print(f"  {board_name:<28} {board_total:>6}건", end="")
+            board_num += 1
+            print(f"\n  {'━' * 76}")
+            print(f"  [{board_num}] {board_name}  (소계: {board_total}건)")
+            print(f"  {'━' * 76}")
+
             if sub_details:
-                # 첫 줄에 최대 4개 서브 게시판
-                shown = sub_details[:4]
-                parts = []
-                for name, count, skipped in shown:
+                for name, count, skipped, titles in sub_details:
                     if skipped:
-                        parts.append(f"{name}(스킵)")
-                    else:
-                        parts.append(f"{name}({count})")
-                print(f"   {', '.join(parts)}")
+                        skipped_count += 1
+                        print(f"    ⊘ {name} — 스킵 (0건)")
+                        continue
 
-                # 나머지 서브 게시판
-                remaining = sub_details[4:]
-                while remaining:
-                    batch = remaining[:4]
-                    remaining = remaining[4:]
-                    parts = []
-                    for name, count, skipped in batch:
-                        if skipped:
-                            parts.append(f"{name}(스킵)")
-                        else:
-                            parts.append(f"{name}({count})")
-                    print(f"  {'':28} {'':>8}    {', '.join(parts)}")
-            else:
-                print("   (서브 게시판 없음)")
+                    print(f"    ✅ {name} — {count}건 수집")
 
-        print("  " + "─" * 66)
-        print(f"  {'합계':<28} {grand_total:>6}건")
-        print(f"  {'CrawlResult 반환 건수':<28} {total_results:>6}건")
-        print("=" * 70)
+                    if titles:
+                        print(f"    {'─' * 72}")
+                        print(f"    {'#':>4}  제목")
+                        print(f"    {'─' * 72}")
+                        for i, title in enumerate(titles, 1):
+                            t = title[:68] if len(title) > 68 else title
+                            print(f"    {i:>4}  {t}")
+                        print()
 
-        # 스킵된 게시판 요약
-        skipped_list = []
-        for board_name, subs in self.boards.items():
-            for sub_key, stat in subs.items():
-                if stat.status == "skipped" or stat.skipped:
-                    loc = board_name
-                    if sub_key != "__total__":
-                        loc += f" > {sub_key}"
-                    skipped_list.append(loc)
-        if skipped_list:
-            print(f"\n  스킵된 게시판 ({len(skipped_list)}개):")
-            for loc in skipped_list:
-                print(f"    ⊘  {loc}")
+        # ── 총 합계 ──
+        print(f"\n  {'=' * 76}")
+        print(f"  총 수집 건수:         {grand_total:>6}건")
+        print(f"  CrawlResult 반환:     {total_results:>6}건  (중복 제거 후)")
+        if skipped_count:
+            print(f"  스킵된 서브게시판:     {skipped_count:>6}개")
+        print(f"  {'=' * 76}")
         print()
+
+    def save_full_results(self, results: list, query: str, output_path: str):
+        """CrawlResult 전체 내용을 파일로 저장"""
+        elapsed = time.time() - self.start_time
+
+        # type별로 그룹핑
+        by_type: dict[str, list] = defaultdict(list)
+        for r in results:
+            by_type[r.type].append(r)
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("=" * 90 + "\n")
+            f.write(f"  OLTA 자료 수집 전체 결과\n")
+            f.write(f"  검색어: \"{query}\"\n")
+            f.write(f"  수집일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"  소요시간: {elapsed:.1f}초\n")
+            f.write(f"  CrawlResult 총 건수: {len(results)}건\n")
+            f.write("=" * 90 + "\n\n")
+
+            global_idx = 0
+            for type_key in sorted(by_type.keys()):
+                items = by_type[type_key]
+                f.write("━" * 90 + "\n")
+                f.write(f"  [{type_key}]  —  {len(items)}건\n")
+                f.write("━" * 90 + "\n\n")
+
+                for i, r in enumerate(items, 1):
+                    global_idx += 1
+                    year = str(r.document_year) if r.document_year else "-"
+                    f.write(f"  ── [{global_idx}] ──────────────────────────────────────\n")
+                    f.write(f"  제목: {r.title}\n")
+                    f.write(f"  유형: {r.type}\n")
+                    f.write(f"  연도: {year}\n")
+                    f.write(f"  ID:   {r.id}\n")
+                    f.write(f"  URL:  {r.url}\n")
+                    f.write(f"  관련도: {r.relevance_score:.2f}\n")
+                    if r.comments:
+                        f.write(f"  댓글: {r.comments}\n")
+                    f.write(f"\n  [미리보기]\n")
+                    f.write(f"  {r.preview}\n")
+                    f.write(f"\n  [본문]\n")
+                    # 본문을 줄단위로 들여쓰기
+                    for line in r.content.split("\n"):
+                        f.write(f"  {line}\n")
+                    f.write("\n\n")
+
+            f.write("=" * 90 + "\n")
+            f.write(f"  총 {global_idx}건 출력 완료\n")
+            f.write("=" * 90 + "\n")
+
+        print(f"  >>> 전체 결과 저장: {output_path}")
+        print(f"      ({global_idx}건, {os.path.getsize(output_path):,} bytes)")
 
 
 # ── 메인 테스트 ──────────────────────────────────────────
@@ -237,30 +276,25 @@ async def main():
         )
         print("  " + "-" * 50)
 
-        # 4. 최종 집계 출력
-        tracker.print_summary(total_results=len(results))
+        # 4. 최종 집계 + 제목 리스트 출력
+        tracker.print_summary(total_results=len(results), results=results)
 
-        # 5. 결과 샘플 출력
+        # 5. 전체 결과를 파일로 저장
         if results:
-            print(f"  수집 결과 샘플 (상위 10건):")
-            print(f"  {'#':>3}  {'유형':<20} {'제목':<40} {'연도':>4}")
-            print("  " + "-" * 70)
-            for i, r in enumerate(results[:10], 1):
-                title = r.title[:38] if len(r.title) > 38 else r.title
-                year = str(r.document_year) if r.document_year else "-"
-                print(f"  {i:>3}  {r.type:<20} {title:<40} {year:>4}")
-            if len(results) > 10:
-                print(f"  ... 외 {len(results) - 10}건")
-            print()
+            output_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "collection_result.txt",
+            )
+            tracker.save_full_results(results, query, output_path)
 
     except KeyboardInterrupt:
         print("\n\n  [!!] 사용자에 의해 중단됨")
-        tracker.print_summary(total_results=0)
+        tracker.print_summary(total_results=0, results=[])
     except Exception as e:
         print(f"\n  [ERROR] 오류 발생: {e}")
         import traceback
         traceback.print_exc()
-        tracker.print_summary(total_results=0)
+        tracker.print_summary(total_results=0, results=[])
     finally:
         print("  브라우저 종료 중...")
         await crawler.close_browser()
