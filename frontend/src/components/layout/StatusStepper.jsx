@@ -1,11 +1,8 @@
 import { useChatStore } from '../../stores/chatStore'
 
 const STAGES = [
-  { key: 'searching', label: '웹 검색', icon: '🔍' },
-  { key: 'drafting', label: '초안 작성', icon: '✏️' },
-  { key: 'verifying', label: 'OLTA 검증', icon: '🔎' },
-  { key: 'researching', label: '추가 조사', icon: '📚' },
-  { key: 'finalizing', label: '최종 정리', icon: '🧩' },
+  { key: 'searching', label: '자료 수집', icon: '🔍' },
+  { key: 'answering', label: '답변 생성', icon: '✏️' },
   { key: 'done', label: '완료', icon: '✅' },
 ]
 

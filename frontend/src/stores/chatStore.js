@@ -81,7 +81,7 @@ export const useChatStore = create((set, get) => ({
     set((state) => ({
       currentStage: stage,
       messages:
-        stage === 'finalizing' && state.activeMessageId
+        stage === 'answering' && state.activeMessageId
           ? state.messages.map((message) =>
               message.id === state.activeMessageId ? { ...message, content: '' } : message,
             )

@@ -262,7 +262,7 @@ class CrawlerService:
             page = await self.ensure_shared_page()
             await page.bring_to_front()
             # Windows에서 bring_to_front만으로 활성화가 안 될 수 있으므로
-            # 새 빈 팝업을 열었다 닫아 포커스를 강제로 가져온다
+            # 여러 방법을 조합하여 포커스를 강제로 가져온다
             await page.evaluate("""
                 () => {
                     const w = window.open('', '_blank', 'width=1,height=1');
@@ -270,6 +270,16 @@ class CrawlerService:
                     window.focus();
                 }
             """)
+            # CDP를 통한 창 활성화 (Chromium 전용)
+            try:
+                cdp = await page.context.new_cdp_session(page)
+                await cdp.send("Browser.setWindowBounds", {
+                    "windowId": (await cdp.send("Browser.getWindowForTarget"))["windowId"],
+                    "bounds": {"windowState": "normal"},
+                })
+                await cdp.detach()
+            except Exception:
+                pass
         except Exception:
             logger.warning("bring_to_front failed", exc_info=True)
 
@@ -299,7 +309,10 @@ class CrawlerService:
                     )
                 else:
                     # 이미 OLTA 비-로그인 페이지 — reload하여 최신 DOM 확보
-                    await page.reload(wait_until="domcontentloaded", timeout=15000)
+                    try:
+                        await page.reload(wait_until="domcontentloaded", timeout=15000)
+                    except Exception:
+                        logger.debug("reload failed, checking DOM as-is")
             return await self._detect_olta_login_on_page(page)
         except Exception:
             logger.warning("OLTA login check failed", exc_info=True)
@@ -315,7 +328,7 @@ class CrawlerService:
         current_url = page.url or ""
         if "olta.re.kr" not in current_url:
             await page.goto(login_url, wait_until="domcontentloaded", timeout=15000)
-        await page.bring_to_front()
+        await self.bring_browser_to_front()
         return login_url
 
     async def get_auth_context(self) -> BrowserContext | None:

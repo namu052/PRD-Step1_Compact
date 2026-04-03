@@ -58,9 +58,11 @@ async def olta_open_login():
 @router.post("/olta-verify")
 async def olta_verify_login():
     """수동 로그인 완료 후 로그인 상태를 재확인한다.
-    Playwright 브라우저를 앞으로 가져온 뒤 로그인 여부를 체크한다."""
-    await crawler_service.bring_browser_to_front()
-    logged_in = await crawler_service.check_olta_login()
+    navigate=False로 호출하여 reload 없이 현재 DOM만 검사한다."""
+    logged_in = await crawler_service.check_olta_login(navigate=False)
+    if not logged_in:
+        # DOM 검사 실패 시 메인으로 이동 후 재확인
+        logged_in = await crawler_service.check_olta_login(navigate=True)
     if logged_in:
         return {"success": True, "message": "OLTA 로그인 확인 완료"}
     return {"success": False, "message": "OLTA 로그인이 확인되지 않습니다. Playwright 브라우저에서 로그인해 주세요."}
